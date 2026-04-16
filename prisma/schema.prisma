@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  channel       String    @default("voice")
+  language      String    @default("en")
+  userName      String?
+  userPhone     String?
+  issueType     String?
+  status        String    @default("open")
+  summary       String?
+  transcript    Message[]
+}
+
+model Message {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  role          String
+  content       String
+  conversationId String
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model KnowledgeDoc {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  title       String
+  category    String
+  language    String   @default("en")
+  source      String?
+  content     String
+  tagsJson    String   @default("[]")
+  qdrantId    String?
+}
+
+model VoiceSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  provider    String   @default("vapi")
+  assistantId String?
+  callId      String?
+  status      String   @default("queued")
+  notes       String?
+}
