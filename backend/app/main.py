@@ -36,7 +36,7 @@ settings = get_settings()
 
 app = FastAPI(
     title="Looca AGI Voice API",
-    description="Backend API for Looca — AGI/ASI Voice Architecture. VAPI + Qdrant + Claude.",
+    description="Backend API for Looca — AGI/ASI Voice Architecture. VAPI + Qdrant + OpenAI.",
     version="1.0.0",
 )
 

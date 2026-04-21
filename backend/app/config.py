@@ -30,8 +30,8 @@ class Settings(BaseSettings):
     # Voyage AI
     VOYAGE_API_KEY: str = ""
 
-    # Claude / Anthropic
-    ANTHROPIC_API_KEY: str = ""
+    # OpenAI
+    OPENAI_API_KEY: str = ""
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

@@ -1,11 +1,10 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { AppShell } from '@/components/AppShell';
 import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'Looca — AGI Voice Architecture',
-  description: 'Voice-first AGI connectivity platform. Cognitive Mesh, USSD-Voice Hybrid, Phantom Signal. Built for GeeBlr Hack 2026.',
+  title: 'Looca — AGI Voice AI',
+  description: 'Your AI that lives inside your computer. Voice-first intelligence for personal and enterprise use.',
   icons: {
     icon: '/l.ico',
   },
@@ -14,9 +13,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>
+      <body className="antialiased">
         <AuthProvider>
-          <AppShell>{children}</AppShell>
+          {children}
         </AuthProvider>
       </body>
     </html>

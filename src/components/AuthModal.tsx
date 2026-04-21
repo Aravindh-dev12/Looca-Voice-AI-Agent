@@ -65,8 +65,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         </button>
 
         <div className="auth-header">
-          <img src="/l.png" alt="Looca" width={48} height={48} style={{ borderRadius: '14px' }} />
-          <h2>{view === 'login' ? 'Welcome Back' : 'Join Looca'}</h2>
+          <h2>{view === 'login' ? 'Welcome Back' : 'Welcome to Looca'}</h2>
           <p>{view === 'login' ? 'Sign in to continue your journey' : 'Create your account to get started'}</p>
         </div>
 
