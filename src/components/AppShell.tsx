@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
 
         <footer>
-          Built for GeeBlr Hack 2026 — AGI voice architecture for societal impact.
+          Built for GeeBlr Hack 2026 voice architecture for societal impact.
         </footer>
       </div>
 

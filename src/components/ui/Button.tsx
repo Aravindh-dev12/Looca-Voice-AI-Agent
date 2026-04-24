@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
@@ -18,11 +18,11 @@ export function Button({
   className,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
-    primary: 'bg-gradient-to-r from-gray-900 to-gray-700 text-white hover:shadow-lg hover:shadow-gray-900/25 focus:ring-gray-900',
-    secondary: 'bg-gray-100 border border-gray-300 text-gray-900 hover:bg-gray-200 focus:ring-gray-400',
+    primary: 'bg-black text-white border border-black hover:bg-zinc-800 focus:ring-black',
+    secondary: 'bg-gray-50 border border-zinc-200 text-black hover:bg-zinc-100 focus:ring-gray-400',
     ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-400',
     danger: 'bg-red-500/10 border border-red-500/30 text-red-600 hover:bg-red-500/20 focus:ring-red-500',
   };

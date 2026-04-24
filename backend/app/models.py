@@ -20,10 +20,66 @@ class User(Base):
     password = Column(String, nullable=True)
     role = Column(String, default="user")
     created_at = Column(DateTime, default=datetime.utcnow)
+    organization_id = Column(String, ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True)
 
     accounts = relationship("Account", back_populates="user", cascade="all, delete-orphan")
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     conversations = relationship("Conversation", back_populates="user")
+    owned_organizations = relationship(
+        "Organization", 
+        back_populates="owner", 
+        primaryjoin="User.id == Organization.owner_id",
+        foreign_keys="Organization.owner_id"
+    )
+    audio_records = relationship(
+        "AudioRecord", 
+        back_populates="user", 
+        cascade="all, delete-orphan",
+        primaryjoin="User.id == AudioRecord.user_id",
+        foreign_keys="AudioRecord.user_id"
+    )
+
+
+class AudioRecord(Base):
+    __tablename__ = "audio_records"
+
+    id = Column(String, primary_key=True, default=cuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(String, ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True)
+    filename = Column(String, nullable=True)
+    original_filename = Column(String, nullable=True)
+    file_url = Column(String, nullable=True)
+    original_url = Column(String, nullable=False)
+    cleared_url = Column(String, nullable=True)
+    status = Column(String, default="processing")
+    tool_type = Column(String, nullable=False)  # isolator, tts, etc.
+    ai_insight = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship(
+        "User", 
+        back_populates="audio_records", 
+        primaryjoin="AudioRecord.user_id == User.id",
+        foreign_keys=[user_id]
+    )
+
+
+class Organization(Base):
+    __tablename__ = "organizations"
+
+    id = Column(String, primary_key=True, default=cuid)
+    name = Column(String, nullable=False)
+    logo_url = Column(String, nullable=True)
+    plan = Column(String, default="enterprise")
+    owner_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    owner = relationship(
+        "User", 
+        back_populates="owned_organizations", 
+        primaryjoin="Organization.owner_id == User.id",
+        foreign_keys=[owner_id]
+    )
 
 
 class Account(Base):

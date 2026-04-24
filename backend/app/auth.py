@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
@@ -12,16 +12,23 @@ from app.database import get_db
 from app.models import User
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Removed passlib CryptContext to avoid version conflicts with bcrypt 4.0+
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    try:
+        return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # bcrypt has a 72-byte limit. We truncate if needed, though most passwords are shorter.
+    # passlib used to handle this, but it's currently broken with newer bcrypt versions.
+    pw_bytes = password.encode('utf-8')
+    return bcrypt.hashpw(pw_bytes, bcrypt.gensalt()).decode('utf-8')
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

@@ -1,7 +1,40 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+
+function ScrambleText({ text }: { text: string }) {
+  const [displayText, setDisplayText] = useState(text);
+  const [trigger, setTrigger] = useState(0);
+  const chars = "!@#$%^&*()_+{}:\"<>?,./;'[]-=";
+
+  useEffect(() => {
+    let iteration = 0;
+    const interval = setInterval(() => {
+      setDisplayText(prev => 
+        text.split("")
+          .map((char, index) => {
+            if (index < iteration - 2) {
+              return text[index];
+            }
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join("")
+      );
+
+      if (iteration >= text.length + 2) {
+        clearInterval(interval);
+        setTimeout(() => setTrigger(t => t + 1), 2000);
+      }
+
+      iteration += 1 / 4;
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [text, trigger]);
+
+  return <span>{displayText}</span>;
+}
 import { 
   Bot, 
   BarChart3, 
@@ -13,35 +46,35 @@ import {
 const functions = [
   {
     number: '01',
-    title: 'Marketing Automation',
-    description: 'Marketing automation tools can help streamline marketing processes, automate repetitive tasks, and improve overall marketing efficiency.',
-    icon: Bot,
-    color: 'from-purple-500 to-pink-500',
-    bgGradient: 'from-purple-50 to-pink-50'
+    title: 'Vocal Intelligence',
+    description: 'Advanced voice analysis that detects emotional prosody, urgency, and grief in just 50 milliseconds of audio input.',
+    image: '/1.jpg',
+    color: 'from-zinc-900 to-zinc-700',
+    bgGradient: 'from-zinc-100 to-zinc-50'
   },
   {
     number: '02',
-    title: 'Analytics & Data',
-    description: 'Analytics and data visualization tools can help extract insights from large sets of data quickly and make data-driven decisions.',
-    icon: BarChart3,
-    color: 'from-cyan-500 to-blue-500',
-    bgGradient: 'from-cyan-50 to-blue-50'
+    title: 'Contextual Awareness',
+    description: 'A persistent intelligence layer that lives inside your computer, remembering every detail of your previous voice sessions.',
+    image: '/2.jpg',
+    color: 'from-zinc-800 to-zinc-600',
+    bgGradient: 'from-zinc-50 to-zinc-100'
   },
   {
     number: '03',
-    title: 'Chatbots & Assistants',
-    description: 'Chatbots and virtual assistants can help provide customer support and automate customer interactions efficiently.',
-    icon: MessageSquare,
-    color: 'from-orange-500 to-amber-500',
-    bgGradient: 'from-orange-50 to-amber-50'
+    title: 'Persistent Companion',
+    description: 'Always listening, always ready. Looca builds a long-term timeline of your life entirely from vocal interactions.',
+    image: '/3.jpg',
+    color: 'from-zinc-700 to-zinc-500',
+    bgGradient: 'from-zinc-100 to-zinc-50'
   },
   {
     number: '04',
-    title: 'Fraud Protection',
-    description: 'AI-powered fraud detection systems analyze patterns in real-time to identify suspicious activities and protect your business.',
-    icon: ShieldCheck,
-    color: 'from-emerald-500 to-teal-500',
-    bgGradient: 'from-emerald-50 to-teal-50'
+    title: 'Scam Shield',
+    description: 'Real-time vocal pattern analysis during calls to identify potential fraud and scams before they impact you.',
+    image: '/4.jpg',
+    color: 'from-zinc-950 to-zinc-800',
+    bgGradient: 'from-zinc-50 to-zinc-100'
   }
 ];
 
@@ -67,30 +100,43 @@ export function FunctionCards() {
       <div className="sticky top-0 h-screen overflow-hidden">
         
         {/* Big text - starts prominent, fades to background when cards scroll */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+             style={{ backgroundImage: `radial-gradient(#000 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+        
         <motion.div 
           className="absolute inset-0 flex items-center justify-center z-0"
           style={{ opacity: textOpacity, scale: textScale }}
         >
           <div className="text-center px-4">
-            <span className="inline-block px-4 py-2 rounded-full border border-gray-400 text-sm text-gray-600 mb-8">
-              BENEFITS OF AI TOOLS
-            </span>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-zinc-200 text-[10px] font-black text-black uppercase tracking-[0.2em] mb-12 shadow-sm"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+              INTELLIGENCE AGENT
+            </motion.div>
             
-            <h2 className="text-7xl md:text-9xl lg:text-[10rem] font-bold text-gray-900 leading-none tracking-tight">
-              BENEFITS
+            <h2 className="text-[12vw] md:text-[10vw] font-black text-black leading-[0.75] mb-12 uppercase tracking-tighter">
+              THE POWER
             </h2>
             <div className="flex items-center justify-center gap-4 mt-4">
-              <span className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900">OF</span>
-              <span className="text-5xl md:text-7xl lg:text-8xl font-mono font-bold text-gray-900 border-4 border-gray-900 px-6 py-2 rounded-3xl">
-                AI
+              <span className="text-5xl md:text-7xl lg:text-[8vw] font-black text-black leading-none">OF</span>
+              <span className="text-5xl md:text-7xl lg:text-[8vw] font-mono font-black text-black border-[6px] border-black px-10 py-2 rounded-full bg-zinc-50/50 backdrop-blur-sm">
+                <ScrambleText text="VOICE" />
               </span>
-              <span className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900">TOOLS</span>
+              <span className="text-5xl md:text-7xl lg:text-[8vw] font-black text-black leading-none uppercase">AI</span>
             </div>
             
-            <p className="text-gray-500 text-sm md:text-base max-w-lg mx-auto mt-8">
-              AI tools are useful for various tasks in marketing, design, programming, 
-              and customer service. Here are some examples.
-            </p>
+            <motion.div className="max-w-2xl mx-auto mt-16 space-y-6">
+              <p className="text-zinc-500 text-base md:text-lg font-bold uppercase tracking-widest leading-relaxed">
+                VOCAL EVOLUTION
+              </p>
+              <p className="text-zinc-400 text-sm md:text-base font-medium max-w-xl mx-auto leading-relaxed italic">
+                "Not just an assistant, but a persistent intellectual companion that 
+                understands the human condition through every syllable and silence."
+              </p>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -101,7 +147,6 @@ export function FunctionCards() {
             style={{ x: cardsX }}
           >
           {functions.map((func, index) => {
-            const Icon = func.icon;
             return (
               <motion.div
                 key={func.number}
@@ -113,31 +158,28 @@ export function FunctionCards() {
               >
                 <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 h-full border border-gray-100">
                   {/* Image Area */}
-                  <div className={`relative h-56 bg-gradient-to-br ${func.bgGradient} overflow-hidden`}>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className={`w-28 h-28 rounded-3xl bg-gradient-to-br ${func.color} flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className="w-14 h-14 text-white" />
-                      </div>
-                    </div>
-                    {/* Decorative circles */}
-                    <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/40" />
-                    <div className="absolute bottom-6 left-6 w-16 h-16 rounded-full bg-white/30" />
-                    <div className="absolute top-1/2 right-12 w-8 h-8 rounded-full bg-white/50" />
+                  <div className={`relative h-56 overflow-hidden`}>
+                    <img 
+                      src={func.image} 
+                      alt={func.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                   </div>
 
                   {/* Content */}
                   <div className="p-8">
                     <div className="flex items-center gap-3 mb-4">
-                      <span className="text-2xl font-bold text-gray-400">{func.number}</span>
-                      <div className="h-px flex-1 bg-gradient-to-r from-gray-300 to-transparent" />
+                      <span className="text-2xl font-bold text-zinc-400">{func.number}</span>
+                      <div className="h-px flex-1 bg-zinc-200" />
                     </div>
-                    <h4 className="text-2xl font-bold text-gray-800 mb-3">
+                    <h4 className="text-2xl font-bold text-zinc-900 mb-3">
                       {func.title}
                     </h4>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                    <p className="text-zinc-500 text-sm leading-relaxed mb-6">
                       {func.description}
                     </p>
-                    <button className="flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-gray-600 transition-colors group/btn">
+                    <button className="flex items-center gap-2 text-sm font-semibold text-zinc-900 hover:text-zinc-600 transition-colors group/btn">
                       Learn more 
                       <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
                     </button>

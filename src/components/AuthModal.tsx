@@ -29,7 +29,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       // Also sign in via NextAuth for session cookie
       await signIn('credentials', { email: loginForm.email, password: loginForm.password, redirect: false });
       onClose();
-      window.location.reload();
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message || 'Invalid email or password');
     }
@@ -46,7 +46,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       localStorage.setItem('looca_token', result.access_token);
       await signIn('credentials', { email: signupForm.email, password: signupForm.password, redirect: false });
       onClose();
-      window.location.reload();
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
     }

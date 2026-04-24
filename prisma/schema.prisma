@@ -8,17 +8,24 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?        @unique
   emailVerified DateTime?
   image         String?
   password      String?
-  role          String    @default("user")
-  createdAt     DateTime  @default(now())
+  role          String         @default("user")
+  createdAt     DateTime       @default(now())
   accounts      Account[]
   sessions      Session[]
   conversations Conversation[]
+  members       Member[]
+  apiKeys       ApiKey[]
+  subscriptions Subscription[]
+  
+  // Active context - which org they're currently viewing
+  activeOrgId   String?
+  mode          String         @default("personal") // personal, company
 }
 
 model Account {
@@ -101,3 +108,88 @@ model VoiceSession {
   status      String   @default("queued")
   notes       String?
 }
+
+// Organization/Company Model
+model Organization {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  industry      String?
+  email         String
+  phone         String?
+  website       String?
+  logo          String?
+  status        String         @default("active")
+  planId        String?
+  plan          Plan?          @relation(fields: [planId], references: [id])
+  apiKeys       ApiKey[]
+  members       Member[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Company-specific settings
+  voiceNumber   String?
+  languages     String[]       @default(["en", "hi", "ta"])
+  settings      String?        @default("{}")
+}
+
+// Subscription Plans
+model Plan {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  type          String         @default("personal") // personal, starter, growth, enterprise
+  description   String?
+  priceMonthly  Int            @default(0)
+  priceYearly   Int            @default(0)
+  features      String[]       @default([])
+  limits        String?        @default("{}") // JSON: { calls: 1000, members: 5, etc }
+  isActive      Boolean        @default(true)
+  organizations Organization[]
+  createdAt     DateTime       @default(now())
+}
+
+// Organization Members (Users belonging to orgs)
+model Member {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role            String       @default("member") // owner, admin, member
+  joinedAt        DateTime     @default(now())
+  
+  @@unique([userId, organizationId])
+}
+
+// API Keys for Enterprise
+model ApiKey {
+  id              String       @id @default(cuid())
+  name            String       @default("Default")
+  key             String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById     String
+  createdBy       User         @relation(fields: [createdById], references: [id])
+  lastUsedAt      DateTime?
+  usageCount      Int          @default(0)
+  isActive        Boolean      @default(true)
+  permissions     String[]     @default(["read"])
+  createdAt       DateTime     @default(now())
+  expiresAt       DateTime?
+}
+
+// User Subscriptions (for tracking plan purchases)
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId          String
+  plan            Plan     @relation(fields: [planId], references: [id])
+  status          String   @default("active") // active, cancelled, expired
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { Brain, Shield, Mic, Globe, Heart, Wallet, BookOpen, Users, ChevronRight } from 'lucide-react';
@@ -10,61 +10,61 @@ const features = [
     number: '01',
     title: 'Voice Mirror',
     subtitle: 'Looca remembers what was said',
-    description: 'A child asks what the teacher said today. An elderly patient asks about medicines. Looca plays back exactly what matters — medicine names, key decisions, next steps.',
+    description: 'A child asks what the teacher said today. An elderly patient asks about medicines. Looca plays back exactly what matters medicine names, key decisions, next steps.',
     bullets: [
       'Separates each speaker\'s voice in group conversations',
       'Creates interactive Q&A quizzes for children',
       'Reads back only what matters in their dialect'
     ],
     icon: Brain,
-    color: 'from-violet-500 to-purple-600',
-    bgColor: 'bg-violet-50',
-    borderColor: 'border-violet-200'
+    color: 'from-zinc-900 to-zinc-700',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '02',
     title: 'Emotional Fingerprint',
     subtitle: 'The 7th Sense',
-    description: 'Looca detects fear, confusion, urgency, and grief from voice prosody in 50 milliseconds — before a single word is processed. A child\'s voice shows distress — Looca quietly alerts the trusted adult.',
+    description: 'Looca detects fear, confusion, urgency, and grief from voice prosody in 50 milliseconds before a single word is processed. A child\'s voice shows distress Looca quietly alerts the trusted adult.',
     bullets: [
       '8-dimensional emotional fingerprint analysis',
       'Child safety protocol with silent guardian alerts',
       'Loneliness detection for elders living alone'
     ],
     icon: Heart,
-    color: 'from-rose-500 to-pink-600',
-    bgColor: 'bg-rose-50',
-    borderColor: 'border-rose-200'
+    color: 'from-zinc-100 to-zinc-200',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '03',
     title: 'Spoken Newspaper',
     subtitle: 'The world delivered to your ears',
-    description: '285 million Indians cannot read the news. Looca reads it to them — curated for their location, interests, and language. A farmer hears crop prices. An elder hears local health news.',
+    description: '285 million Indians cannot read the news. Looca reads it to them curated for their location, interests, and language. A farmer hears crop prices. An elder hears local health news.',
     bullets: [
       'Personalized to location, interests, and life situation',
       'Only verified sources — government, WHO, regional press',
       'Misinformation filter for fake WhatsApp forwards'
     ],
     icon: Mic,
-    color: 'from-blue-500 to-cyan-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200'
+    color: 'from-zinc-400 to-zinc-600',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '04',
     title: 'Silent Guardian',
     subtitle: 'A child can always reach safety',
-    description: 'A 7-year-old is home alone and falls. They say \'Looca, I\'m hurt.\' Looca calmly guides them to first-aid — step by step, in their language — and silently notifies their parent.',
+    description: 'A 7-year-old is home alone and falls. They say \'Looca, I\'m hurt.\' Looca calmly guides them to first-aid step by step, in their language and silently notifies their parent.',
     bullets: [
       'Complete first-aid voice guidance for emergencies',
       'Stranger danger protocol: silent GPS alert to parent + police',
       'Child speaks → Looca acts. Zero requirements from child'
     ],
     icon: Shield,
-    color: 'from-amber-500 to-orange-600',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-200'
+    color: 'from-zinc-950 to-zinc-800',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '05',
@@ -77,39 +77,39 @@ const features = [
       'Absorbs the repeating-question load for caregivers'
     ],
     icon: Brain,
-    color: 'from-teal-500 to-emerald-600',
-    bgColor: 'bg-teal-50',
-    borderColor: 'border-teal-200'
+    color: 'from-zinc-100 to-zinc-300',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '06',
     title: 'Voice Wallet',
     subtitle: 'Your money, accessible by speaking',
-    description: 'Check balance. Send money. Pay bills. Entirely by voice. No screen needed. No app required. When someone calls claiming to be your bank asking for OTP — Looca interrupts: \'This is a scam.\'',
+    description: 'Check balance. Send money. Pay bills. Entirely by voice. No screen needed. No app required. When someone calls claiming to be your bank asking for OTP Looca interrupts: \'This is a scam.\'',
     bullets: [
       'Full UPI transaction by voice: balance, transfer, bills',
       'Built-in fraud shield detects scam call patterns',
       'Micro-savings intelligence suggests saving schemes'
     ],
     icon: Wallet,
-    color: 'from-green-500 to-emerald-600',
-    bgColor: 'bg-green-50',
-    borderColor: 'border-green-200'
+    color: 'from-zinc-800 to-zinc-950',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '07',
     title: 'Story Mode',
     subtitle: 'Education as folk tales',
-    description: 'Why do we pay tax? What is hypertension? Looca explains anything as a 2-minute story with characters and conflict — in local cultural settings. A child in Tamil Nadu hears a fisherman\'s story.',
+    description: 'Why do we pay tax? What is hypertension? Looca explains anything as a 2-minute story with characters and conflict in local cultural settings. A child in Tamil Nadu hears a fisherman\'s story.',
     bullets: [
       'Civic concepts, health, science — all as oral folk tales',
       'Culturally adapted: fishermen, farmers, village elders',
       'Children comply with medication 3x more when they understand why'
     ],
     icon: BookOpen,
-    color: 'from-indigo-500 to-violet-600',
-    bgColor: 'bg-indigo-50',
-    borderColor: 'border-indigo-200'
+    color: 'from-zinc-400 to-zinc-500',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   },
   {
     number: '08',
@@ -122,11 +122,44 @@ const features = [
       'Weekly emotional signals: "She laughed on Tuesday"'
     ],
     icon: Heart,
-    color: 'from-slate-500 to-gray-600',
-    bgColor: 'bg-slate-50',
-    borderColor: 'border-slate-200'
+    color: 'from-zinc-900 to-black',
+    bgColor: 'bg-zinc-50',
+    borderColor: 'border-zinc-200'
   }
 ];
+function ScrambleText({ text }: { text: string }) {
+  const [displayText, setDisplayText] = useState(text);
+  const [trigger, setTrigger] = useState(0);
+  const chars = "!@#$%^&*()_+{}:\"<>?,./;'[]-=";
+
+  useEffect(() => {
+    let iteration = 0;
+    const interval = setInterval(() => {
+      setDisplayText(prev =>
+        text.split("")
+          .map((char, index) => {
+            if (index < iteration - 2) {
+              return text[index];
+            }
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join("")
+      );
+
+      if (iteration >= text.length + 2) {
+        clearInterval(interval);
+        // Trigger again after 2 seconds
+        setTimeout(() => setTrigger(t => t + 1), 2000);
+      }
+
+      iteration += 1 / 4;
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [text, trigger]);
+
+  return <span>{displayText}</span>;
+}
 
 export function HorizontalFeatures() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -136,64 +169,61 @@ export function HorizontalFeatures() {
     offset: ["start start", "end end"]
   });
 
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-800%"]);
+  const x = useTransform(scrollYProgress, [0, 0.15, 1], ["0%", "0%", "-800%"]);
 
   return (
     <div ref={containerRef} className="relative" style={{ height: `${(features.length + 1) * 100}vh` }}>
       <div className="sticky top-0 h-screen overflow-hidden bg-white">
         {/* Horizontal scroll container */}
-        <motion.div 
+        <motion.div
           className="flex h-full"
           style={{ x }}
         >
-          {/* Hero Slide */}
-          <div className="w-screen h-full flex-shrink-0 flex items-center justify-center px-8 md:px-16">
-            <div className="max-w-6xl w-full">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <motion.span 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    className="inline-block px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-600 mb-6"
-                  >
-                    FEATURES
-                  </motion.span>
-                  <motion.h2 
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-5xl md:text-7xl font-bold text-gray-900 leading-tight mb-6"
-                  >
-                    EXAMPLES<br />
-                    OF MODERN<br />
-                    <span className="inline-block px-6 py-2 rounded-full border-2 border-gray-900">
-                      AI TOOLS
-                    </span>
-                  </motion.h2>
-                  <motion.p 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-gray-600 text-lg max-w-md"
-                  >
-                    Here are some of the most popular and useful modern AI tools 
-                    for digital specialists, freelancers, and entrepreneurs.
-                  </motion.p>
-                </div>
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
+          {/* Hero Slide - Redesigned */}
+          <div className="w-screen h-full flex-shrink-0 flex items-center justify-center px-8 md:px-16 bg-white relative overflow-hidden">
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+              style={{ backgroundImage: `radial-gradient(#000 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+            <div className="max-w-7xl w-full relative z-10">
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="relative aspect-square max-w-lg mx-auto"
+                  className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-zinc-50 border border-zinc-200 text-[10px] font-black text-black uppercase tracking-[0.2em] mb-12 shadow-sm"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-32 h-32 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center">
-                        <Brain className="w-16 h-16 text-white" />
-                      </div>
-                      <p className="text-gray-500 text-sm">Intelligence that works for everyone</p>
-                    </div>
+                  <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                  PERSISTENCE LAYER
+                </motion.div>
+
+                <motion.h2
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.8, ease: "circOut" }}
+                  className="text-[14vw] md:text-[11vw] font-black text-black leading-[0.75] mb-12 uppercase tracking-tighter"
+                >
+                  THE POWER<br />
+                  OF <span className="inline-block px-10 py-2 rounded-full border-[6px] border-black text-black bg-zinc-50/50 backdrop-blur-sm">
+                    <ScrambleText text="VOICE" />
+                  </span> AI
+                </motion.h2>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="max-w-2xl mx-auto space-y-6"
+                >
+                  <p className="text-zinc-500 text-base md:text-lg font-bold uppercase tracking-widest leading-relaxed">
+                    A VOCAL EVOLUTION
+                  </p>
+                  <p className="text-zinc-400 text-sm md:text-base font-medium max-w-xl mx-auto leading-relaxed italic">
+                    "Not just an assistant, but a persistent intellectual companion that
+                    understands the human condition through every syllable and silence."
+                  </p>
+                  <div className="flex items-center justify-center gap-4 pt-4">
+                    <div className="h-px w-12 bg-zinc-200" />
+                    <div className="w-2 h-2 rounded-full border-2 border-zinc-300" />
+                    <div className="h-px w-12 bg-zinc-200" />
                   </div>
                 </motion.div>
               </div>
@@ -204,7 +234,7 @@ export function HorizontalFeatures() {
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <div 
+              <div
                 key={feature.number}
                 className="w-screen h-full flex-shrink-0 flex items-center justify-center px-8 md:px-16"
               >

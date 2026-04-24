@@ -4,7 +4,19 @@ from app.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"), echo=False)
+# Auto-detect database type and use appropriate async driver
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
+elif db_url.startswith("sqlite:///"):
+    db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///")
+
+# SQLite needs check_same_thread=False for async
+engine_kwargs = {"echo": False}
+if db_url.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_async_engine(db_url, **engine_kwargs)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 

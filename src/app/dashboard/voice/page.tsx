@@ -32,8 +32,8 @@ export default function VoicePage() {
       {/* Header */}
       <div className="text-center mb-8">
         <Badge variant="accent" className="mb-4">Interactive Assistant</Badge>
-        <h1 className="text-3xl font-bold text-white mb-2">Talk with Looca</h1>
-        <p className="text-[#a7b4c8]">This is the primary interaction point. Speak clearly to the assistant.</p>
+        <h1 className="text-3xl font-bold text-[#0f172a] mb-2">Talk with Looca</h1>
+        <p className="text-[#64748b]">This is the primary interaction point. Speak clearly to the assistant.</p>
       </div>
 
       {/* Voice Interface */}
@@ -54,10 +54,12 @@ export default function VoicePage() {
             >
               <button
                 onClick={handleActivate}
-                className="w-40 h-40 rounded-full bg-gradient-to-br from-[rgba(124,219,255,0.2)] to-[rgba(139,92,246,0.2)] border-2 border-[rgba(124,219,255,0.4)] flex flex-col items-center justify-center gap-3 hover:border-[#7cdbff] hover:shadow-[0_0_80px_rgba(124,219,255,0.3)] transition-all duration-500 group"
+                className="w-40 h-40 rounded-full bg-white border-2 border-[#e2e8f0] flex flex-col items-center justify-center gap-3 hover:border-[#0ea5e9] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500 group"
               >
-                <Mic className="w-12 h-12 text-[#7cdbff] group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold text-white tracking-widest uppercase">Initialize</span>
+                <div className="w-16 h-16 rounded-full bg-[#f0f9ff] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Mic className="w-8 h-8 text-[#0ea5e9]" />
+                </div>
+                <span className="text-xs font-bold text-[#0f172a] tracking-widest uppercase">Initialize</span>
               </button>
               <p className="mt-8 text-sm text-[#64748b] uppercase tracking-widest">Built for Accessibility & Impact</p>
             </motion.div>
@@ -100,10 +102,10 @@ export default function VoicePage() {
               </div>
 
               {/* Status Text */}
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="text-2xl font-bold text-[#0f172a] mb-2">
                 {status === 'listening' ? '◉ Listening' : status === 'thinking' ? '◎ Thinking' : '● Responding'}
               </h2>
-              <p className="text-[#a7b4c8] mb-8">{currentStatus.text}</p>
+              <p className="text-[#64748b] mb-8">{currentStatus.text}</p>
 
               {/* Live Transcript (demo) */}
               {status !== 'idle' && (
@@ -112,12 +114,12 @@ export default function VoicePage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="max-w-md mx-auto"
                 >
-                  <Card className="p-4 mb-4 bg-white/5">
-                    <div className="flex items-center gap-2 mb-2 text-sm text-[#64748b]">
+                  <Card className="p-4 mb-4 bg-[#f8fafc] border-[#e2e8f0]">
+                    <div className="flex items-center gap-2 mb-2 text-sm text-[#94a3b8]">
                       <Sparkles className="w-4 h-4" />
                       Live Context
                     </div>
-                    <p className="text-sm text-[#a7b4c8]">
+                    <p className="text-sm text-[#0f172a] leading-relaxed">
                       {status === 'listening' && "YOU: 'Mujhe kal ke liye doctor appointment...'"}
                       {status === 'thinking' && 'Retrieving from Qdrant (42ms) • Detecting language: Hindi • Loading health context'}
                       {status === 'responding' && "LOOCA: 'Bilkul. Aapke nearest government hospital mein Thursday 10am aur 2pm ke slots hain.'"}
@@ -134,9 +136,9 @@ export default function VoicePage() {
         </AnimatePresence>
 
         {/* Instructions */}
-        <Card className="absolute bottom-6 left-6 right-6 p-4 max-w-md mx-auto">
-          <h4 className="font-medium text-white mb-2">Instructions</h4>
-          <ul className="text-sm text-[#a7b4c8] space-y-1">
+        <Card className="absolute bottom-6 left-6 right-6 p-4 max-w-md mx-auto shadow-lg border-[#e2e8f0]">
+          <h4 className="font-bold text-[#0f172a] mb-2">Instructions</h4>
+          <ul className="text-sm text-[#64748b] space-y-1">
             <li>• State your request clearly</li>
             <li>• Ask about specific services (e.g., "Healthcare")</li>
             <li>• The assistant will simplify complex steps for you</li>

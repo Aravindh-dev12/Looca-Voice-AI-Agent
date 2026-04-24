@@ -1,142 +1,206 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { 
-  Mic, Clock, AlertCircle, Calendar, Heart, FileText, 
-  ChevronRight, Sparkles, Brain 
-} from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, Badge, Button } from '@/components/ui';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, MicOff, Sparkles, CheckCircle, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
+import { Card, Button, Badge } from '@/components/ui';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
+type VoiceStatus = 'idle' | 'listening' | 'thinking' | 'responding' | 'done';
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+export default function TalkDashboard() {
+  const [status, setStatus] = useState<VoiceStatus>('idle');
+  const [lastAction, setLastAction] = useState<string | null>(null);
 
-export default function DashboardPage() {
+  const handleActivate = () => {
+    setStatus('listening');
+    setTimeout(() => setStatus('thinking'), 2500);
+    setTimeout(() => setStatus('responding'), 4500);
+  };
+
+  const handleStop = () => {
+    if (status === 'responding') {
+      setStatus('done');
+      setLastAction('Clinic Appointment Booked');
+      setTimeout(() => setStatus('idle'), 5000);
+    } else {
+      setStatus('idle');
+    }
+  };
+
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="max-w-7xl mx-auto space-y-6"
-    >
-      {/* Header */}
-      <motion.div variants={itemVariants} className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Good morning, Ramu</h1>
-          <p className="text-[#a7b4c8] mt-1">Looca has 3 things for you today</p>
-        </div>
-        <Badge variant="success" dot>Online — Full Intelligence</Badge>
-      </motion.div>
-
-      {/* Proactive Briefing */}
-      <motion.div variants={itemVariants}>
-        <Card gradient className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-[rgba(124,219,255,0.15)]">
-              <Sparkles className="w-5 h-5 text-[#7cdbff]" />
-            </div>
-            <div>
-              <CardTitle>Today's Intelligence Briefing</CardTitle>
-              <CardDescription>Proactive insights from your conversations</CardDescription>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-2 h-2 rounded-full bg-[#fbbf24] mt-2" />
-              <div className="flex-1">
-                <h4 className="font-medium text-white">Ration card expires in 12 days</h4>
-                <p className="text-sm text-[#a7b4c8] mt-1">Your PDS card needs renewal before May 3, 2026</p>
-                <Button variant="ghost" size="sm" className="mt-2">
-                  Renew now <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-2 h-2 rounded-full bg-[#7cdbff] mt-2" />
-              <div className="flex-1">
-                <h4 className="font-medium text-white">Clinic appointment tomorrow, 10am</h4>
-                <p className="text-sm text-[#a7b4c8] mt-1">Rajiv Gandhi Hospital, Counter 4B. Bring Aadhaar + prescription.</p>
-                <p className="text-sm text-[#a7b4c8] mt-1">Bus 42A from your street departs 8:15am</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 border-l-2 border-l-[#fb7185]">
-              <div className="w-2 h-2 rounded-full bg-[#fb7185] mt-2" />
-              <div className="flex-1">
-                <h4 className="font-medium text-white flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-[#fb7185]" />
-                  Knee pain mentioned 3 times in 6 weeks
-                </h4>
-                <p className="text-sm text-[#a7b4c8] mt-1">Severity trend: 3/10 → 4/10 → 6/10. Pattern suggests progressive joint issue.</p>
-                <div className="flex gap-2 mt-3">
-                  <Button size="sm">Book orthopedic consult</Button>
-                  <Button variant="ghost" size="sm">Remind me later</Button>
+    <div className="h-full flex flex-col items-center justify-center relative overflow-hidden px-4">
+      {/* Background Calm Gradient */}
+      <div className="absolute inset-0 bg-[#f9f9fb] transition-colors duration-1000" />
+      
+      {/* Animated Orb Container */}
+      <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
+        <AnimatePresence mode="wait">
+          {status === 'idle' ? (
+            <motion.div
+              key="idle"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+              className="text-center"
+            >
+              <button
+                onClick={handleActivate}
+                className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-white border-2 border-zinc-100 shadow-xl flex flex-col items-center justify-center group hover:border-black transition-all duration-700"
+              >
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-zinc-50 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-black transition-all duration-500">
+                  <Mic className="w-8 h-8 md:w-10 md:h-10 text-zinc-400 group-hover:text-white" />
                 </div>
+                <span className="text-xs md:text-sm font-black text-black uppercase tracking-widest px-4">
+                  Tap to Talk
+                </span>
+              </button>
+              <p className="mt-8 text-zinc-400 text-sm font-bold uppercase tracking-[0.2em] animate-pulse">
+                VIOS is listening
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="active"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center w-full"
+            >
+              {/* The 3D-ish Pulse Orb */}
+              <div className="relative w-64 h-64 md:w-80 md:h-80 mb-12">
+                {/* Visual Feedback Rings */}
+                <AnimatePresence>
+                  {(status === 'listening' || status === 'responding') && (
+                    <>
+                      <motion.div
+                        className="absolute inset-0 rounded-full border-2 border-black/10"
+                        initial={{ scale: 1, opacity: 0 }}
+                        animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'circOut' }}
+                      />
+                      <motion.div
+                        className="absolute inset-0 rounded-full border-2 border-black/10"
+                        initial={{ scale: 1, opacity: 0 }}
+                        animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'circOut', delay: 0.6 }}
+                      />
+                    </>
+                  )}
+                </AnimatePresence>
+
+                {/* Main Orb Body */}
+                <motion.div
+                  className="absolute inset-4 rounded-full shadow-2xl overflow-hidden"
+                  animate={{ 
+                    scale: status === 'listening' ? [1, 1.05, 1] : 1,
+                    rotate: status === 'thinking' ? 360 : 0
+                  }}
+                  transition={{ 
+                    scale: { duration: 1, repeat: Infinity },
+                    rotate: { duration: 4, repeat: Infinity, ease: 'linear' }
+                  }}
+                  style={{
+                    background: status === 'thinking' 
+                      ? 'conic-gradient(from 0deg, #000, #fff, #000)'
+                      : 'radial-gradient(circle at 35% 35%, #fff, #27272a, #000)',
+                    boxShadow: status === 'listening' 
+                      ? '0 0 80px rgba(0,0,0,0.15)' 
+                      : '0 0 40px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-black/10 mix-blend-overlay opacity-50" />
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" 
+                    animate={{ opacity: [0.2, 0.4, 0.2] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </motion.div>
+                
+                {/* Visualizer bars inside/above if responding */}
+                {status === 'responding' && (
+                   <div className="absolute inset-0 flex items-center justify-center gap-1.5 px-12">
+                     {[...Array(8)].map((_, i) => (
+                       <motion.div
+                         key={i}
+                         className="w-1.5 bg-white/20 rounded-full"
+                         animate={{ height: [10, 40, 10] }}
+                         transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                       />
+                     ))}
+                   </div>
+                )}
               </div>
-            </div>
-          </div>
-        </Card>
-      </motion.div>
 
-      {/* Quick Voice & Stats */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6 flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[rgba(124,219,255,0.2)] to-[rgba(139,92,246,0.2)] flex items-center justify-center mb-4">
-            <Mic className="w-8 h-8 text-[#7cdbff]" />
-          </div>
-          <h3 className="font-semibold text-white">Quick Voice</h3>
-          <p className="text-sm text-[#a7b4c8] mt-1">Say "Hey Looca" or click to talk</p>
-          <Button className="mt-4 w-full">Start talking</Button>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Brain className="w-5 h-5 text-[#7cdbff]" />
-            <h3 className="font-semibold text-white">Memory</h3>
-          </div>
-          <div className="text-3xl font-bold text-white">847</div>
-          <p className="text-sm text-[#a7b4c8]">Episodes stored</p>
-          <div className="mt-3 text-sm text-[#64748b]">3.2 years of conversations</div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Clock className="w-5 h-5 text-[#34d399]" />
-            <h3 className="font-semibold text-white">Today</h3>
-          </div>
-          <div className="text-3xl font-bold text-white">2</div>
-          <p className="text-sm text-[#a7b4c8]">Conversations</p>
-          <div className="mt-3 text-sm text-[#64748b]">14 mins total</div>
-        </Card>
-      </motion.div>
-
-      {/* Quick Actions */}
-      <motion.div variants={itemVariants}>
-        <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: Calendar, label: 'View Meetings', color: 'from-[#7cdbff]/20' },
-            { icon: Heart, label: 'Health Timeline', color: 'from-[#fb7185]/20' },
-            { icon: FileText, label: 'My Files', color: 'from-[#fbbf24]/20' },
-            { icon: Sparkles, label: 'Ask Anything', color: 'from-[#34d399]/20' },
-          ].map((action) => (
-            <Card key={action.label} className="p-4 hover:bg-white/5 transition-colors cursor-pointer group">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.color} to-transparent flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                <action.icon className="w-5 h-5 text-white" />
+              {/* Live Transcript - Minimalist & Ghostly */}
+              <div className="h-20 flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={status}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-2xl md:text-3xl font-bold text-black text-center max-w-xl leading-snug tracking-tight"
+                  >
+                    {status === 'listening' && "I am listening to you..."}
+                    {status === 'thinking' && "Checking your history..."}
+                    {status === 'responding' && "Okay, I've booked that for you."}
+                  </motion.p>
+                </AnimatePresence>
               </div>
-              <span className="text-sm font-medium text-white">{action.label}</span>
+
+              <motion.button
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 onClick={handleStop}
+                 className="mt-16 flex items-center gap-3 px-8 py-4 rounded-full bg-black text-white hover:bg-zinc-800 transition-all shadow-xl group"
+              >
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span className="text-sm font-black uppercase tracking-widest">
+                  {status === 'responding' ? 'Complete' : 'Cancel'}
+                </span>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Action Receipt - Bottom Right */}
+      <AnimatePresence>
+        {(lastAction || status === 'done') && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, x: 50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+            className="fixed bottom-10 right-10 z-50"
+          >
+            <Card className="p-5 border-2 border-emerald-100 bg-emerald-50 shadow-2xl flex items-center gap-5 max-w-sm">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-200">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Action Complete</span>
+                </div>
+                <h4 className="text-lg font-black text-black leading-tight">
+                  {lastAction || 'Appointment Booked'}
+                </h4>
+              </div>
+              <button 
+                onClick={() => setLastAction(null)}
+                className="p-2 ml-2 hover:bg-emerald-100 rounded-lg transition-colors"
+              >
+                <ArrowRight className="w-5 h-5 text-emerald-400 rotate-45" />
+              </button>
             </Card>
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Safety Badge - Bottom Left */}
+      <div className="fixed bottom-10 left-10 flex items-center gap-3 text-zinc-400">
+        <ShieldCheck className="w-5 h-5" />
+        <span className="text-[10px] font-black uppercase tracking-widest">Private & Secure</span>
+      </div>
+    </div>
   );
 }

@@ -4,12 +4,12 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 const textLines = [
-  { left: 'AI TOOLS', right: 'ARE TRANSFORMING', start: 0 },
-  { center: 'THE DIGITAL LANDSCAPE', start: 0.15 },
-  { left: '&', right: 'DIGITAL SPECIALISTS', start: 0.30 },
-  { center: 'WHO EMBRACE', right: 'THEM', start: 0.45 },
-  { left: 'CAN ACHIEVE', right: 'SIGNIFICANT', start: 0.60 },
-  { left: 'COMPETITIVE', right: 'ADVANTAGES', start: 0.75 },
+  { left: 'VOICE AI', right: 'IS TRANSFORMING', start: 0 },
+  { center: 'THE WAY WE CONNECT', start: 0.15 },
+  { left: '&', right: 'HUMAN INTERACTION', start: 0.30 },
+  { center: 'FOR EVERYONE', right: 'EVERYWHERE', start: 0.45 },
+  { left: 'CAN ACHIEVE', right: 'TOTAL', start: 0.60 },
+  { left: 'PERSISTENT', right: 'INTELLIGENCE', start: 0.75 },
 ];
 
 function AnimatedText({ text, progress, start }: { text: string; progress: any; start: number }) {

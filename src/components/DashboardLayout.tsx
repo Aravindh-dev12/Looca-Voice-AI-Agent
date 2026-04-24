@@ -2,15 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home, MemoryStick, Calendar, Heart, FileText, Mic, AppWindow, 
-  Settings, LogOut, Menu, X, Building2, Users, BarChart3, 
-  Database, Bot, Link2, Shield, CreditCard 
+import {
+  Home, Brain, Calendar, Heart, FileText, Mic, AppWindow,
+  Settings, LogOut, Menu, X, Building2, Users, BarChart3,
+  Database, Bot, Link2, Shield, CreditCard, Sparkles, Key,
+  Users2, History, Wallet, GraduationCap, Lock, ChevronDown,
+  Bell, MessageSquare, ArrowRight, Download, CheckCircle, Wand2, Sliders, Type
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from './AuthProvider';
+import { ModeSwitcher } from './ModeSwitcher';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -18,25 +21,22 @@ interface DashboardLayoutProps {
 }
 
 const userNavItems = [
-  { label: 'Home', href: '/dashboard', icon: Home },
-  { label: 'Memory', href: '/dashboard/memory', icon: MemoryStick },
-  { label: 'Meetings', href: '/dashboard/meetings', icon: Calendar },
-  { label: 'Health', href: '/dashboard/health', icon: Heart },
-  { label: 'My Files', href: '/dashboard/files', icon: FileText },
-  { label: 'Voice', href: '/dashboard/voice', icon: Mic },
-  { label: 'Apps', href: '/dashboard/apps', icon: AppWindow },
+  { label: 'Talk', href: '/dashboard', icon: Mic },
+  { label: 'What You Know', href: '/dashboard/memory', icon: Brain },
+  { label: 'Things We Did', href: '/dashboard/actions', icon: CheckCircle },
+  { label: 'Simplify Document', href: '/dashboard/simplify', icon: Wand2 },
+  { label: 'Settings', href: '/dashboard/settings', icon: Sliders },
 ];
 
 const companyNavItems = [
-  { label: 'Home', href: '/company/dashboard', icon: Home },
-  { label: 'Live Calls', href: '/company/calls', icon: Mic },
-  { label: 'Users', href: '/company/users', icon: Users },
-  { label: 'Demand Intel', href: '/company/demand', icon: BarChart3 },
-  { label: 'Knowledge', href: '/company/knowledge', icon: Database },
-  { label: 'Agents', href: '/company/agents', icon: Bot },
+  { label: 'Overview', href: '/company/dashboard', icon: BarChart3 },
+  { label: 'API Keys', href: '/company/api-keys', icon: Key },
+  { label: 'Usage Analytics', href: '/company/usage', icon: History },
+  { label: 'Team Management', href: '/company/team', icon: Users2 },
+  { label: 'Billing & Credits', href: '/company/billing', icon: CreditCard },
+  { label: 'Voice Agents', href: '/company/agents', icon: Bot },
   { label: 'Integrations', href: '/company/integrations', icon: Link2 },
-  { label: 'Compliance', href: '/company/compliance', icon: Shield },
-  { label: 'Billing', href: '/company/billing', icon: CreditCard },
+  { label: 'Security', href: '/company/security', icon: Lock },
 ];
 
 export function DashboardLayout({ children, type }: DashboardLayoutProps) {
@@ -44,27 +44,113 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  
+  const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
+
   const navItems = type === 'user' ? userNavItems : companyNavItems;
   const title = type === 'user' ? 'Looca Personal' : 'Looca for Companies';
 
+  // Real Org Data from Auth
+  const hasCompanyAccess = user?.role === 'enterprise' || !!user?.organization;
+  const companyName = user?.organization?.name || 'Your Company';
+  const companyLogo = user?.organization?.logo_url;
+
   return (
-    <div className="min-h-screen bg-[#07111f] flex">
+    <div className="h-screen bg-[#f8fafc] flex text-[#0f172a] overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r border-[rgba(148,163,184,0.1)] bg-[#0d1729]">
-        <div className="p-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7cdbff] to-[#8b5cf6] flex items-center justify-center shadow-lg shadow-[#7cdbff]/20">
-              <span className="text-lg font-bold text-[#07111f]">L</span>
-            </div>
-            <div>
-              <span className="text-lg font-bold text-white">Looca</span>
-              <p className="text-xs text-[#a7b4c8]">{type === 'company' ? 'Enterprise' : 'Personal'}</p>
-            </div>
-          </Link>
+      <aside className="hidden lg:flex w-[240px] flex-col border-r border-zinc-100 bg-[#f9f9fb] h-screen sticky top-0 overflow-hidden">
+        <div className="p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2.5 px-1 mb-2">
+            <img src="/l.png" alt="Looca Logo" className="w-6 h-6 object-contain" />
+            <span className="font-semibold text-lg text-black tracking-tighter">Looca</span>
+          </div>
+
+          <div className="relative">
+            <button 
+              onClick={() => setOrgSwitcherOpen(!orgSwitcherOpen)}
+              className="flex items-center justify-between w-full h-10 px-3 bg-white border border-zinc-200 rounded-xl hover:border-black transition-all group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className={cn(
+                  "w-5 h-5 rounded-full flex items-center justify-center",
+                  type === 'user' ? "bg-orange-100" : "bg-blue-100"
+                )}>
+                  <div className={cn(
+                    "w-2.5 h-2.5 rounded-full",
+                    type === 'user' ? "bg-orange-500" : "bg-blue-500"
+                  )} />
+                </div>
+                <span className="text-xs font-bold text-zinc-700">
+                  {type === 'user' ? 'Personal' : companyName}
+                </span>
+              </div>
+              <div className="flex flex-col gap-0.5 opacity-40">
+                <ChevronDown className={cn("w-2 h-2 transition-transform", orgSwitcherOpen ? "rotate-0" : "rotate-180")} />
+                <ChevronDown className={cn("w-2 h-2 transition-transform", orgSwitcherOpen ? "rotate-180" : "rotate-0")} />
+              </div>
+            </button>
+
+            <AnimatePresence>
+              {orgSwitcherOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-zinc-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                >
+                  <Link 
+                    href="/upgrade"
+                    onClick={() => setOrgSwitcherOpen(false)}
+                    className="flex items-center gap-3 w-full p-3 hover:bg-zinc-50 transition-colors border-b border-zinc-50"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center">
+                      <Building2 className="w-4 h-4 text-black" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-black leading-none">Enterprise</p>
+                      <p className="text-[10px] text-zinc-400 mt-1">Upgrade to Enterprise</p>
+                    </div>
+                  </Link>
+                  <button 
+                    disabled
+                    className="flex items-center justify-between w-full p-3 bg-[#f9f9fb] cursor-default"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white border border-zinc-100 flex items-center justify-center">
+                        <Users className="w-4 h-4 text-black" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[11px] font-bold text-black leading-none">Personal</p>
+                        <p className="text-[10px] text-zinc-400 mt-1">Free Tier Plan</p>
+                      </div>
+                    </div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-black mr-1" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
-        <nav className="flex-1 px-4 py-2 space-y-1">
+        <div className="flex-1 overflow-y-auto py-1 px-3 space-y-0.5 scrollbar-hide">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
@@ -73,34 +159,85 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
+                  'flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold transition-all duration-200 relative group',
                   isActive
-                    ? 'bg-gradient-to-r from-[rgba(124,219,255,0.15)] to-[rgba(139,92,246,0.15)] text-white border border-[rgba(124,219,255,0.25)]'
-                    : 'text-[#a7b4c8] hover:bg-white/5 hover:text-white'
+                    ? 'bg-[#efeff3] text-black shadow-sm'
+                    : 'text-zinc-500 hover:text-black hover:bg-zinc-50'
                 )}
               >
-                <Icon className={cn('w-5 h-5', isActive ? 'text-[#7cdbff]' : '')} />
-                {item.label}
+                <div className="flex items-center gap-3">
+                  <Icon className={cn('w-4 h-4', isActive ? 'text-black' : 'text-zinc-400 group-hover:text-black transition-colors')} />
+                  {item.label}
+                </div>
+                {isActive && (
+                  <motion.div 
+                    layoutId="sidebar-active-indicator"
+                    className="absolute right-1 w-1 h-4 rounded-full bg-black shadow-[0_0_8px_rgba(0,0,0,0.1)]" 
+                  />
+                )}
               </Link>
             );
           })}
-        </nav>
 
-        <div className="p-4 border-t border-[rgba(148,163,184,0.1)]">
-          <Link
-            href="/dashboard/settings"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#a7b4c8] hover:bg-white/5 hover:text-white transition-all mb-1"
-          >
-            <Settings className="w-5 h-5" />
-            Settings
+          <div className="pt-2 space-y-0.5">
+            {[
+              { label: 'Voice Isolator', icon: Users, href: '/dashboard/tools/isolator' },
+              { label: 'Text to Speech', icon: Mic, href: '/dashboard/tools/tts' },
+              { label: 'Sound Effects', icon: Sparkles, href: '/dashboard/tools/vfx' },
+              { label: 'Speech to Text', icon: Type, href: '/dashboard/tools/stt' },
+              { label: 'Voice Changer', icon: Heart, href: '/dashboard/tools/voice-changer' }
+            ].map((item) => (
+              <Link 
+                key={item.label} 
+                href={item.href}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold transition-all relative group",
+                  pathname === item.href ? "bg-[#efeff3] text-black shadow-sm" : "text-zinc-500 hover:text-black hover:bg-zinc-50"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon className={cn("w-4 h-4", pathname === item.href ? "text-black" : "text-zinc-400 group-hover:text-black transition-colors")} />
+                  {item.label}
+                </div>
+                {pathname === item.href && (
+                  <motion.div 
+                    layoutId="sidebar-active-indicator-tools"
+                    className="absolute right-1 w-1 h-4 rounded-full bg-black shadow-[0_0_8px_rgba(0,0,0,0.1)]" 
+                  />
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+
+        <div className="p-3 mt-auto space-y-2 bg-[#f9f9fb] border-t border-zinc-100">
+          {deferredPrompt && (
+            <button 
+              onClick={handleInstall}
+              className="flex items-center justify-between w-full h-10 px-3 bg-black border border-black rounded-lg hover:bg-zinc-800 transition-all group shadow-sm text-white"
+            >
+              <div className="flex items-center gap-2.5">
+                <Download className="w-4 h-4 text-white" />
+                <span className="text-[13px] font-bold">Download App</span>
+              </div>
+              <div className="w-4 h-4 rounded bg-white/10 flex items-center justify-center">
+                <ArrowRight className="w-3 h-3 text-white -rotate-45" />
+              </div>
+            </button>
+          )}
+
+          <Link href="/upgrade" className="flex items-center justify-between w-full h-10 px-3 bg-white border-2 border-zinc-100 rounded-lg hover:border-black transition-all group shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded bg-black flex items-center justify-center transform rotate-45">
+                <Sparkles className="w-3 h-3 text-white transform -rotate-45" />
+              </div>
+              <span className="text-[13px] font-bold text-black">Upgrade</span>
+            </div>
+            <div className="w-5 h-5 rounded bg-black flex items-center justify-center group-hover:scale-105 transition-transform">
+              <ArrowRight className="w-3 h-3 text-white -rotate-45" />
+            </div>
           </Link>
-          <button
-            onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
-          >
-            <LogOut className="w-5 h-5" />
-            Sign Out
-          </button>
         </div>
       </aside>
 
@@ -120,16 +257,16 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed left-0 top-0 h-full w-72 bg-[#0d1729] border-r border-[rgba(148,163,184,0.1)] z-50 flex flex-col"
+              className="lg:hidden fixed left-0 top-0 h-full w-72 bg-white border-r border-[#e2e8f0] z-50 flex flex-col"
             >
               <div className="p-6 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7cdbff] to-[#8b5cf6] flex items-center justify-center">
-                    <span className="text-lg font-bold text-[#07111f]">L</span>
+                  <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
+                    <span className="text-lg font-bold text-white">L</span>
                   </div>
-                  <span className="text-lg font-bold text-white">Looca</span>
+                  <span className="text-lg font-bold text-[#0f172a]">Looca</span>
                 </Link>
-                <button onClick={() => setSidebarOpen(false)} className="p-2 text-white/70 hover:text-white">
+                <button onClick={() => setSidebarOpen(false)} className="p-2 text-[#64748b] hover:text-[#0f172a]">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -146,8 +283,8 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
                         isActive
-                          ? 'bg-gradient-to-r from-[rgba(124,219,255,0.15)] to-[rgba(139,92,246,0.15)] text-white'
-                          : 'text-[#a7b4c8] hover:bg-white/5 hover:text-white'
+                          ? 'bg-black text-white'
+                          : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
                       )}
                     >
                       <Icon className="w-5 h-5" />
@@ -164,69 +301,46 @@ export function DashboardLayout({ children, type }: DashboardLayoutProps) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-16 border-b border-[rgba(148,163,184,0.1)] bg-[#0d1729]/80 backdrop-blur-xl flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
+        <header className="h-[52px] border-b border-zinc-100 bg-white flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-zinc-500 hover:text-black hover:bg-zinc-50 rounded-lg transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-semibold text-white hidden sm:block">{title}</h1>
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div className="flex items-center gap-1.5 p-1 rounded-md transition-colors">
+                <div className="w-4 h-4 rounded bg-zinc-100 flex items-center justify-center">
+                  <div className="w-2 h-2 border border-zinc-400 rounded-sm" />
+                </div>
+                <span className="text-xs font-bold text-zinc-800 tracking-tight">
+                  {pathname?.split('/').pop()?.charAt(0).toUpperCase() + (pathname?.split('/').pop()?.slice(1).replace('-', ' ') || 'Dashboard')}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {type === 'company' && (
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm text-[#a7b4c8]">Live</span>
-              </div>
-            )}
-            <div className="relative">
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-3 p-1.5 pr-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7cdbff] to-[#8b5cf6] flex items-center justify-center text-sm font-bold text-[#07111f]">
-                  {user?.name?.[0] || user?.email?.[0] || 'U'}
-                </div>
-                <span className="text-sm font-medium text-white hidden sm:block">
-                  {user?.name || user?.email?.split('@')[0] || 'User'}
-                </span>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
+              <button className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-black hover:bg-zinc-50 rounded-lg transition-colors">
+                <FileText className="w-4.5 h-4.5" />
               </button>
-
-              <AnimatePresence>
-                {profileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 top-full mt-2 w-56 bg-[#0d1729] border border-[rgba(148,163,184,0.2)] rounded-2xl shadow-xl overflow-hidden z-50"
-                  >
-                    <div className="p-4 border-b border-[rgba(148,163,184,0.1)]">
-                      <p className="font-medium text-white">{user?.name || 'User'}</p>
-                      <p className="text-sm text-[#a7b4c8]">{user?.email}</p>
-                    </div>
-                    <div className="p-2">
-                      <Link
-                        href="/dashboard/settings"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#a7b4c8] hover:bg-white/5 hover:text-white transition-colors"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </Link>
-                      <button
-                        onClick={() => { logout(); setProfileOpen(false); }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </motion.div>
+              <button className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-black hover:bg-zinc-50 rounded-lg transition-colors">
+                <Bell className="w-4.5 h-4.5" />
+              </button>
+              <Link
+                href={type === 'company' ? '/company/settings' : '/dashboard/settings'}
+                className="w-8 h-8 rounded-full bg-[#f1f1f5] border border-zinc-200 flex items-center justify-center text-[10px] font-bold text-zinc-500 hover:border-black hover:text-black transition-all overflow-hidden ml-1 cursor-pointer"
+              >
+                {type === 'company' && companyLogo ? (
+                  <img src={companyLogo} alt={companyName} className="w-full h-full object-cover" />
+                ) : user?.image ? (
+                  <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{type === 'company' ? companyName[0].toUpperCase() : (user?.name?.[0]?.toUpperCase() || 'U')}</span>
                 )}
-              </AnimatePresence>
+              </Link>
             </div>
           </div>
         </header>

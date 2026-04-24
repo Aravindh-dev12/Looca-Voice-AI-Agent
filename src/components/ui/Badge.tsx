@@ -13,21 +13,21 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', className, dot }: BadgeProps) {
   const variants = {
-    default: 'bg-white/5 border-white/10 text-white/80',
-    success: 'bg-[rgba(52,211,153,0.12)] border-[rgba(52,211,153,0.2)] text-[#a7f3d0]',
-    warning: 'bg-[rgba(251,191,36,0.12)] border-[rgba(251,191,36,0.2)] text-[#fcd34d]',
-    danger: 'bg-[rgba(251,113,133,0.12)] border-[rgba(251,113,133,0.2)] text-[#fda4af]',
-    info: 'bg-[rgba(124,219,255,0.12)] border-[rgba(124,219,255,0.2)] text-[#7cdbff]',
-    accent: 'bg-[rgba(139,92,246,0.12)] border-[rgba(139,92,246,0.2)] text-[#a78bfa]',
+    default: 'bg-zinc-100 border-zinc-200 text-zinc-900',
+    success: 'bg-black border-black text-white',
+    warning: 'bg-white border-zinc-200 text-zinc-600',
+    danger: 'bg-zinc-800 border-zinc-800 text-zinc-100',
+    info: 'bg-zinc-200 border-zinc-300 text-zinc-900',
+    accent: 'bg-zinc-950 border-zinc-950 text-white',
   };
 
   const dotColors = {
-    default: 'bg-white/50',
-    success: 'bg-[#34d399]',
-    warning: 'bg-[#fbbf24]',
-    danger: 'bg-[#fb7185]',
-    info: 'bg-[#7cdbff]',
-    accent: 'bg-[#a78bfa]',
+    default: 'bg-zinc-400',
+    success: 'bg-white',
+    warning: 'bg-zinc-900',
+    danger: 'bg-zinc-200',
+    info: 'bg-black',
+    accent: 'bg-black',
   };
 
   return (

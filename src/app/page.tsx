@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { 
-  Mic, Brain, Shield, Zap, Globe, Users, 
-  ChevronRight, Sparkles, Phone, Building2, ArrowRight 
+import {
+  Mic, Brain, Shield, Zap, Globe,
+  Sparkles, ArrowRight, User as UserIcon, LogOut, Download
 } from 'lucide-react';
 import { Button, Card, Badge } from '@/components/ui';
 import { useAuth } from '@/components/AuthProvider';
@@ -21,25 +21,25 @@ const features = [
     icon: Brain,
     title: 'Episodic Memory',
     desc: 'Every conversation remembered. Looca builds a timeline of your life from voice interactions.',
-    color: 'from-[#7cdbff] to-[#a78bfa]',
+    color: 'from-zinc-400 to-zinc-600',
   },
   {
     icon: Mic,
     title: 'Always Listening',
     desc: 'Say "Hey Looca" anywhere. Your AI assistant is always ready, even offline.',
-    color: 'from-[#34d399] to-[#7cdbff]',
+    color: 'from-zinc-300 to-zinc-500',
   },
   {
     icon: Shield,
     title: 'Private & Local',
     desc: 'Your data never leaves your device. Run local AI models with optional cloud sync.',
-    color: 'from-[#a78bfa] to-[#f472b6]',
+    color: 'from-zinc-500 to-zinc-700',
   },
   {
     icon: Zap,
     title: '7th Sense AI',
     desc: 'Proactive intelligence that detects patterns and anticipates your needs.',
-    color: 'from-[#fbbf24] to-[#f97316]',
+    color: 'from-zinc-200 to-zinc-400',
   },
 ];
 
@@ -51,9 +51,48 @@ const stats = [
 ];
 
 export default function LandingPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [authOpen, setAuthOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showSplash, setShowSplash] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    setIsStandalone(checkStandalone);
+
+    if (checkStandalone && !user) {
+      setShowSplash(true);
+      setTimeout(() => {
+        setShowSplash(false);
+        setAuthOpen(true);
+      }, 3500);
+    }
+
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, [user]);
+
+  const handleInstall = async () => {
+    if (user) {
+      router.push('/dashboard');
+      return;
+    }
+
+    if (!deferredPrompt) {
+      setAuthOpen(true);
+      return;
+    }
+
+    // Still allow public users who have been prompted but haven't logged in to install if they want 
+    // OR we can just force them to Get Started (Auth)
+    setAuthOpen(true);
+  };
 
   const handleProtectedClick = (path: string) => {
     if (user) {
@@ -65,12 +104,42 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black flex items-center justify-center px-4"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+              >
+                <img src="/l.png" alt="Looca" className="w-20 h-20 mx-auto mb-8 invert" />
+                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-4">
+                  LOOCA AI
+                </h2>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 1 }}
+                  className="text-zinc-400 text-lg md:text-xl font-medium tracking-tight"
+                >
+                  Your Voice Opinion Model
+                </motion.p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Hero */}
       <section className="relative overflow-hidden">
 
         {/* Compact Glassmorphism Header */}
         <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl">
-          <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-gray-200 shadow-lg">
+          <div className="flex items-center justify-between px-6 py-2.5 rounded-full bg-white/80 backdrop-blur-xl border border-gray-200 shadow-lg">
             <Link href="/" className="flex items-center gap-2.5">
               <Image src="/l.png" alt="Looca" width={32} height={32} className="rounded-lg" />
               <span className="text-lg font-bold text-gray-900">Looca</span>
@@ -80,14 +149,25 @@ export default function LandingPage() {
               <Link href="#personal" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Personal</Link>
               <Link href="#enterprise" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Enterprise</Link>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {user ? (
-                <Button size="sm" onClick={() => router.push('/dashboard')}>Dashboard</Button>
+                <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex flex-col items-end">
+                    <span className="text-sm font-black text-gray-900 leading-none">{user.name}</span>
+                  </div>
+                  <Link href="/dashboard">
+                    <div className="relative group">
+                      <div className="w-10 h-10 rounded-full border-2 border-black overflow-hidden flex items-center justify-center text-black font-black text-lg uppercase transition-all group-hover:bg-black group-hover:text-white">
+                        {user.name[0]}
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                    </div>
+                  </Link>
+                </div>
               ) : (
-                <>
-                  <Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign In</Button>
-                  <Button size="sm" onClick={() => setAuthOpen(true)}>Get Started</Button>
-                </>
+                <Button size="sm" onClick={() => setAuthOpen(true)} className="rounded-full px-6">
+                  Sign In
+                </Button>
               )}
             </div>
           </div>
@@ -110,7 +190,7 @@ export default function LandingPage() {
               transition={{ delay: 0.1 }}
               className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight"
             >
-              Your AI that lives <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600">inside</span> your computer
+              Your AI that lives <span className="text-black">inside</span> your computer
             </motion.h1>
 
             <motion.p
@@ -120,7 +200,7 @@ export default function LandingPage() {
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto"
             >
               Looca is not a website. It is a persistent intelligence layer that lives inside your computer,
-              always aware, always helping — like your personal AI companion.
+              always aware, always helping like your personal AI companion.
             </motion.p>
 
             <motion.div
@@ -129,9 +209,9 @@ export default function LandingPage() {
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Button size="lg" onClick={() => handleProtectedClick('/dashboard')}>Get Started Free</Button>
-              <Button size="lg" variant="secondary" onClick={() => handleProtectedClick('/company/signup')}>
-                <Building2 className="w-4 h-4 mr-2" /> For Companies
+              <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-black text-white hover:bg-zinc-800 transition-all shadow-xl group" onClick={handleInstall}>
+                Get Started
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>
 
@@ -162,108 +242,20 @@ export default function LandingPage() {
       {/* Scrolling Text Animation */}
       <ScrollingText />
 
-      {/* Two Paths */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Personal */}
-            <motion.div
-              id="personal"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="relative"
-            >
-              <Card gradient className="p-8 h-full border-l-4 border-l-gray-900">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-gray-900" />
-                  </div>
-                  <div>
-                    <Badge variant="info">For Individuals</Badge>
-                    <h3 className="text-2xl font-bold text-gray-900">Looca Personal</h3>
-                  </div>
-                </div>
-                <ul className="space-y-4 mb-8">
-                  {[
-                    'Episodic memory of all conversations',
-                    'Automatic meeting transcription',
-                    'Health timeline & medicine tracking',
-                    'File intelligence & document analysis',
-                    'Works offline with local AI models',
-                    'Wake word: "Hey Looca"',
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-gray-600">
-                      <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
-                        <ChevronRight className="w-3 h-3 text-gray-900" />
-                      </div>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button className="w-full" onClick={() => handleProtectedClick('/dashboard')}>
-                  Access Personal Dashboard <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Card>
-            </motion.div>
-
-            {/* Enterprise */}
-            <motion.div
-              id="enterprise"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="relative"
-            >
-              <Card gradient className="p-8 h-full border-l-4 border-l-gray-600">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-gray-700" />
-                  </div>
-                  <div>
-                    <Badge variant="accent">For Organizations</Badge>
-                    <h3 className="text-2xl font-bold text-gray-900">Looca for Companies</h3>
-                  </div>
-                </div>
-                <ul className="space-y-4 mb-8">
-                  {[
-                    '24/7 voice support in 10+ Indian languages',
-                    'Live call monitoring & analytics',
-                    'Unmet demand intelligence radar',
-                    'Auto-ingestion from your website/docs',
-                    'Integration with HIS, EMR, CRM systems',
-                    'Compliance: ABDM, DPDP, NABH ready',
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-gray-600">
-                      <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center">
-                        <ChevronRight className="w-3 h-3 text-gray-700" />
-                      </div>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button variant="secondary" className="w-full" onClick={() => handleProtectedClick('/company/signup')}>
-                  Sign Up Your Company <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Card>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#7cdbff]/5 to-transparent" />
+      <section className="py-24 relative overflow-hidden bg-zinc-50">
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
             Ready to experience the future of voice AI?
           </h2>
           <p className="text-gray-600 mb-8 text-lg">
-            Join thousands of users and organizations already using Looca to transform 
+            Join thousands of users and organizations already using Looca to transform
             how they interact with technology.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" onClick={() => handleProtectedClick('/dashboard')}>Get Started Free</Button>
-            <Button size="lg" variant="secondary" onClick={() => handleProtectedClick('/company/signup')}>
-              <Phone className="w-4 h-4 mr-2" /> Demo
+            <Button size="lg" className="h-16 px-12 text-xl rounded-full bg-black text-white hover:bg-zinc-800 transition-all shadow-2xl group" onClick={handleInstall}>
+              Get Started
+              <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>
@@ -313,7 +305,7 @@ export default function LandingPage() {
         <div className="relative w-full overflow-hidden mt-16">
           <div className="flex items-center justify-center overflow-hidden">
             <span
-              className="text-[30vw] md:text-[26vw] font-black text-transparent bg-clip-text bg-gradient-to-r from-[#7cdbff] via-[#a78bfa] to-[#7cdbff] whitespace-nowrap select-none leading-[0.75] w-full text-center"
+              className="text-[30vw] md:text-[26vw] font-black text-black whitespace-nowrap select-none leading-[0.75] w-full text-center"
               style={{ letterSpacing: '-0.08em' }}
             >
               LOOCA
@@ -324,10 +316,10 @@ export default function LandingPage() {
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <img src="/l.png" alt="Looca" className="w-5 h-5 rounded-md" />
-                <span className="text-gray-900 font-semibold text-sm">Looca</span>
+                <span className="text-gray-900 font-semibold text-sm">Looca AI</span>
               </div>
               <p className="text-sm text-gray-500">
-                © 2026 Looca AGI. Built for GeeBlr Hack.
+                © 2026 Persistent Voice Intelligence. Built for GeeBlr Hack.
               </p>
             </div>
           </div>
