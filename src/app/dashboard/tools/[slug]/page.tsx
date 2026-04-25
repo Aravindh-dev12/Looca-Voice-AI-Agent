@@ -13,13 +13,23 @@ import {
 import { Card, Button, Badge, Slider, Switch } from '@/components/ui';
 import Link from 'next/link';
 
+type TTSSettings = {
+  speed: number;
+  stability: number;
+  similarity: number;
+  styleExaggeration: number;
+  speakerBoost: boolean;
+  languageOverride: boolean;
+  outputFormat: string;
+};
+
 const toolConfig: Record<string, any> = {
   'isolator': {
     title: 'Voice Isolator',
     description: 'Remove background noise and make the speaker sound crystal clear.',
     icon: Users,
     action: 'Select Audio to Clean',
-    helper: 'VIOS uses deep neural networks to strip away traffic, wind, and background chatter.',
+    helper: 'Looca uses deep neural networks to strip away traffic, wind, and background chatter.',
     successMsg: 'Background noise removed successfully.'
   },
   'tts': {
@@ -27,7 +37,7 @@ const toolConfig: Record<string, any> = {
     description: 'Turn written words into a clear voice that reads to you.',
     icon: Mic,
     action: 'Enter Text to Speak',
-    helper: 'VIOS can read messages, letters, or news articles out loud.',
+    helper: 'Looca can read messages, letters, or news articles out loud.',
     successMsg: 'Voice generated successfully.'
   },
   'vfx': {
@@ -35,7 +45,7 @@ const toolConfig: Record<string, any> = {
     description: 'Add clear sounds to make your voice messages better.',
     icon: Sparkles,
     action: 'Add Sound Effect',
-    helper: 'VIOS adds simple sounds like alerts, bells, or background music.',
+    helper: 'Looca adds simple sounds like alerts, bells, or background music.',
     successMsg: 'Effects applied successfully.'
   },
   'stt': {
@@ -43,7 +53,7 @@ const toolConfig: Record<string, any> = {
     description: 'Turn your voice into written words.',
     icon: Type,
     action: 'Tap to Record',
-    helper: 'VIOS writes down exactly what you say in any language.',
+    helper: 'Looca writes down exactly what you say in any language.',
     successMsg: 'Transcribed successfully.'
   },
   'voice-changer': {
@@ -51,7 +61,7 @@ const toolConfig: Record<string, any> = {
     description: 'Make your voice sound clearer or change how it talks.',
     icon: Heart,
     action: 'Record Voice',
-    helper: 'VIOS can make your voice deeper, higher, or just more stable.',
+    helper: 'Looca can make your voice deeper, higher, or just more stable.',
     successMsg: 'Voice adjusted successfully.'
   }
 };
@@ -64,13 +74,14 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [resultUrls, setResultUrls] = useState<{ original: string, cleared: string } | null>(null);
+  const [transcriptResult, setTranscriptResult] = useState<string | null>(null);
 
   const [ttsText, setTtsText] = useState('');
   const [vfxPrompt, setVfxPrompt] = useState('');
   const [selectedVoice, setSelectedVoice] = useState('roger');
   const [activeCategory, setActiveCategory] = useState('All');
   const [isVoiceDropdownOpen, setIsVoiceDropdownOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('google/lyria-3-pro-preview');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini-tts');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isOutputFormatDropdownOpen, setIsOutputFormatDropdownOpen] = useState(false);
   const [ttsSettings, setTtsSettings] = useState<TTSSettings>({
@@ -87,8 +98,9 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('/api/audio/my', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${baseUrl}/api/audio/my`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('looca_token')}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -121,6 +133,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
 
     setStage('processing');
     setProgress(10);
+    setTranscriptResult(null);
 
     try {
       const token = localStorage.getItem('looca_token');
@@ -131,7 +144,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
         const payload = {
           text: ttsText,
           voice: selectedVoice,
-          model: selectedModel || "google/lyria-3-pro-preview",
+          model: selectedModel || "gpt-4o-mini-tts",
           settings: ttsSettings
         };
         res = await fetch(`${baseUrl}/api/vios/tts`, {
@@ -145,7 +158,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
       } else if (slug === 'vfx') {
         const payload = {
           prompt: vfxPrompt,
-          model: selectedModel || "google/lyria-3-pro-preview"
+          model: selectedModel || "gpt-4o-mini-tts"
         };
         res = await fetch(`${baseUrl}/api/vios/vfx`, {
           method: 'POST',
@@ -154,6 +167,30 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
+        });
+      } else if (slug === 'stt') {
+        const formData = new FormData();
+        if (file) formData.append('file', file);
+        formData.append('model', 'gpt-4o-mini-transcribe');
+        res = await fetch(`${baseUrl}/api/vios/stt`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+      } else if (slug === 'voice-changer') {
+        const formData = new FormData();
+        if (file) formData.append('file', file);
+        formData.append('voice', selectedVoice);
+        formData.append('model', 'gpt-4o-mini-tts');
+        formData.append('transcribe_model', 'gpt-4o-mini-transcribe');
+        res = await fetch(`${baseUrl}/api/vios/voice-changer`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
         });
       } else {
         const formData = new FormData();
@@ -173,22 +210,30 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
       }
 
       const data = await res.json();
-      setResultUrls({
-        original: data.original_url || '',
-        cleared: data.cleared_url || data.audio_url
-      });
-      setGeneratedAudioInfo({
-        voice: selectedVoice,
-        model: selectedModel,
-        speed: ttsSettings.speed,
-        stability: ttsSettings.stability,
-        similarity: ttsSettings.similarity,
-        styleExaggeration: ttsSettings.styleExaggeration
-      });
+      if (data.transcript) {
+        setTranscriptResult(data.transcript);
+      }
+
+      if (data.audio_url || data.cleared_url) {
+        setResultUrls({
+          original: data.original_url || data.audio_url || '',
+          cleared: data.cleared_url || data.audio_url
+        });
+        setGeneratedAudioInfo({
+          voice: selectedVoice,
+          model: selectedModel,
+          speed: ttsSettings.speed,
+          stability: ttsSettings.stability,
+          similarity: ttsSettings.similarity,
+          styleExaggeration: ttsSettings.styleExaggeration
+        });
+      } else {
+        setResultUrls(null);
+      }
 
       setProgress(100);
       setTimeout(() => setStage('result'), 500);
-      fetchHistory(); 
+      fetchHistory();
     } catch (error: any) {
       alert(`Error: ${error.message || 'Something went wrong'}`);
       setStage('upload');
@@ -256,7 +301,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
     <div className="h-screen bg-white flex flex-col overflow-hidden font-sans">
       <main className="flex-1 flex overflow-hidden">
         <div className="flex-1 flex flex-col min-w-0 bg-white relative">
-          <div className="flex-1 p-10 overflow-y-auto relative flex flex-col">
+          <div className="flex-1 p-6 overflow-y-auto relative flex flex-col">
             {slug === 'tts' ? (
               <textarea
                 className="w-full h-full text-2xl font-medium text-zinc-900 placeholder:text-zinc-200 resize-none focus:outline-none bg-transparent leading-relaxed"
@@ -265,9 +310,9 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                 onChange={(e) => setTtsText(e.target.value.slice(0, 5000))}
               />
             ) : slug === 'vfx' && stage !== 'processing' ? (
-              <div className="flex flex-col h-full space-y-8">
-                <div className="flex items-center gap-6 border-b border-zinc-100 pb-4">
-                  <h2 className="text-2xl font-black text-black">Sound Effects</h2>
+              <div className="flex flex-col h-full space-y-6">
+                <div className="flex items-center gap-4 border-b border-zinc-100 pb-3">
+                  <h2 className="text-xl font-black tracking-tight text-black">Sound Effects</h2>
                   <div className="flex items-center gap-4 text-sm font-bold text-zinc-400 ml-4">
                     <span className="text-zinc-900 cursor-pointer">Explore</span>
                     <span className="cursor-pointer hover:text-zinc-600 transition-colors">History</span>
@@ -275,27 +320,35 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-6 gap-4">
-                  {['Animals', 'Bass', 'Booms', 'Braams', 'Brass', 'Cymbals'].map((cat, i) => (
-                    <div key={cat} className="aspect-square rounded-2xl bg-zinc-900 overflow-hidden relative group cursor-pointer">
-                      <div className={`absolute inset-0 opacity-40 bg-gradient-to-br from-indigo-500 to-purple-600`} />
-                      <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                        <span className="text-white font-black text-sm relative z-10">{cat}</span>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5">
+                  {[
+                    { label: 'Animals', visual: '🐘', tint: 'from-emerald-400 to-emerald-700' },
+                    { label: 'Bass', visual: '🔊', tint: 'from-indigo-400 to-indigo-700' },
+                    { label: 'Booms', visual: '💥', tint: 'from-rose-400 to-rose-700' },
+                    { label: 'Braams', visual: '⚡', tint: 'from-amber-400 to-amber-700' },
+                    { label: 'Brass', visual: '🎺', tint: 'from-orange-400 to-orange-700' },
+                  ].map((cat) => (
+                    <div key={cat.label} className="relative aspect-[0.9] overflow-hidden rounded-[20px] border border-zinc-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${cat.tint} opacity-95`} />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.28),_transparent_50%)]" />
+                      <div className="relative z-10 flex h-full flex-col justify-between p-3">
+                        <span className="text-2xl">{cat.visual}</span>
+                        <span className="text-[11px] font-black tracking-tight text-white uppercase">{cat.label}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <div className="flex-1 relative">
-                    <Search className="w-5 h-5 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                    <input type="text" placeholder="Search sound effects..." className="w-full h-12 pl-12 pr-4 bg-white border border-zinc-200 rounded-xl text-sm font-bold placeholder:text-zinc-400 focus:outline-none focus:border-zinc-300" />
-                  </div>
-                  <Button variant="outline" className="h-12 px-6 rounded-xl font-bold border-zinc-200 text-zinc-600">Trending <ChevronDown className="w-4 h-4 ml-2" /></Button>
+                    <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input type="text" placeholder="Search sound effects..." className="w-full h-10 pl-10 pr-4 bg-white border border-zinc-200 rounded-xl text-sm font-bold placeholder:text-zinc-400 focus:outline-none focus:border-zinc-300" />
+                    </div>
+                  <Button variant="outline" className="h-10 px-4 rounded-xl font-bold border-zinc-200 text-xs text-zinc-600">Trending <ChevronDown className="w-3.5 h-3.5 ml-2" /></Button>
                 </div>
 
-                <div className="flex-1 flex flex-col items-center justify-end pb-10">
-                  <div className="w-full max-w-2xl bg-white border border-zinc-200 rounded-3xl shadow-2xl p-4 flex flex-col gap-4">
+                <div className="flex-1 flex flex-col items-center justify-end pb-3">
+                  <div className="w-full max-w-xl bg-white border border-zinc-200 rounded-[24px] shadow-lg p-3 flex flex-col gap-3">
                     <div className="flex gap-2">
                       {['Footsteps on gravel', 'Rain on window', 'Cat purring'].map(suggestion => (
                         <button key={suggestion} onClick={() => setVfxPrompt(suggestion)} className="px-4 py-1.5 rounded-full border border-zinc-200 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors">
@@ -310,14 +363,14 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                         onChange={(e) => setVfxPrompt(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && vfxPrompt && startProcessing()}
                         placeholder="Describe a sound..." 
-                        className="flex-1 text-lg font-medium text-zinc-900 placeholder:text-zinc-400 bg-transparent focus:outline-none"
+                        className="flex-1 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 bg-transparent focus:outline-none"
                       />
-                      <Button onClick={() => startProcessing()} disabled={!vfxPrompt} className="w-10 h-10 rounded-full bg-zinc-900 hover:bg-black text-white p-0 flex items-center justify-center disabled:opacity-50">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      <Button onClick={() => startProcessing()} disabled={!vfxPrompt} className="w-8 h-8 rounded-full bg-zinc-900 hover:bg-black text-white p-0 flex items-center justify-center disabled:opacity-50">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                       </Button>
                     </div>
                     <div className="flex items-center justify-between text-xs font-bold text-zinc-400 pt-2 border-t border-zinc-100">
-                      <div className="flex gap-4">
+                      <div className="flex gap-3">
                         <span className="flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Off</span>
                         <span className="flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> Auto</span>
                       </div>
@@ -328,12 +381,12 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
               </div>
             ) : stage === 'processing' ? (
               <div className="h-full flex flex-col items-center justify-center space-y-12">
-                <div className="relative w-48 h-48 flex items-center justify-center">
+                <div className="relative w-36 h-36 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="96" cy="96" r="90" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-zinc-50" />
-                    <motion.circle cx="96" cy="96" r="90" stroke="currentColor" strokeWidth="6" strokeDasharray="565.48" animate={{ strokeDashoffset: 565.48 * (1 - progress / 100) }} fill="transparent" className="text-black" />
+                    <circle cx="72" cy="72" r="66" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-zinc-50" />
+                    <motion.circle cx="72" cy="72" r="66" stroke="currentColor" strokeWidth="6" strokeDasharray="414.69" animate={{ strokeDashoffset: 414.69 * (1 - progress / 100) }} fill="transparent" className="text-black" />
                   </svg>
-                  <span className="absolute text-4xl font-black">{progress}%</span>
+                  <span className="absolute text-2xl font-black">{progress}%</span>
                 </div>
                 <div className="text-center space-y-2">
                   <h3 className="text-xl font-black text-black">Processing Audio</h3>
@@ -341,9 +394,9 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                 </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col p-12 space-y-8 relative overflow-hidden">
+              <div className="h-full flex flex-col p-8 space-y-8 relative overflow-hidden">
                 {slug === 'tts' ? (
-                  <div className="flex-1 bg-white rounded-[40px] border border-zinc-100 shadow-sm p-10 flex flex-col space-y-6 relative">
+                  <div className="flex-1 bg-white rounded-[32px] border border-zinc-100 shadow-sm p-6 flex flex-col space-y-4 relative">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
@@ -351,7 +404,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                         </div>
                         <h2 className="text-xl font-black text-black">Voice Editor</h2>
                       </div>
-                      
+
                       <AnimatePresence>
                         {stage === 'result' && resultUrls && (
                           <motion.div
@@ -360,7 +413,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                             className="flex items-center gap-2 bg-zinc-900 text-white px-4 py-2 rounded-2xl shadow-lg border border-white/10"
                           >
                             <div className="flex items-center gap-3 pr-3 border-r border-white/10">
-                              <Button 
+                              <Button
                                 variant="ghost"
                                 className="w-8 h-8 p-0 rounded-full bg-white/10 hover:bg-white/20 text-white"
                                 onClick={() => togglePlay(resultUrls.cleared)}
@@ -369,16 +422,16 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                               </Button>
                               <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Ready</div>
                             </div>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               className="h-8 px-3 rounded-xl text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest"
                               onClick={handleDownload}
                             >
                               <Download className="w-3.5 h-3.5 mr-1.5" />
                               Save
                             </Button>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               className="w-8 h-8 p-0 rounded-xl text-white/40 hover:text-white"
                               onClick={() => setStage('upload')}
                             >
@@ -390,7 +443,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                     </div>
 
                     <textarea
-                      className="flex-1 w-full bg-transparent border-none resize-none text-4xl font-black text-zinc-900 placeholder:text-zinc-100 focus:outline-none"
+                      className="flex-1 w-full bg-transparent border-none resize-none text-2xl font-black text-zinc-900 placeholder:text-zinc-100 focus:outline-none"
                       placeholder="Start typing..."
                       value={ttsText}
                       onChange={(e) => setTtsText(e.target.value)}
@@ -398,33 +451,48 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
 
                     <div className="pt-6 border-t border-zinc-50 flex items-center justify-between">
                       <div className="flex gap-2">
-                        <Badge variant="outline" className="rounded-full px-4 py-1.5 border-zinc-100 text-[10px] font-black uppercase text-zinc-400">OpenRouter V3</Badge>
-                        <Badge variant="outline" className="rounded-full px-4 py-1.5 border-zinc-100 text-[10px] font-black uppercase text-zinc-400">HQ Audio</Badge>
+                        <Badge variant="outline" className="rounded-full px-4 py-1.5 border-zinc-100 text-[10px] font-black uppercase text-zinc-400">OpenAI Audio</Badge>
+                        <Badge variant="outline" className="rounded-full px-4 py-1.5 border-zinc-100 text-[10px] font-black uppercase text-zinc-400">Accessibility Voice</Badge>
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center space-y-12">
+                ) : slug === 'stt' && stage === 'result' && transcriptResult ? (
+                  <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-6">
                     <div className="space-y-4 text-center">
-                      <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center mx-auto shadow-2xl">
-                        <tool.icon className="w-10 h-10 text-white" />
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white shadow-2xl">
+                        <Type className="h-6 w-6" />
                       </div>
-                      <h1 className="text-5xl font-black text-black tracking-tight">{tool.title}</h1>
-                      <p className="text-zinc-500 font-medium text-lg max-w-xl mx-auto">{tool.description}</p>
+                      <div>
+                        <h2 className="text-2xl font-black tracking-tight text-black">Transcript ready</h2>
+                        <p className="mt-1 text-sm text-zinc-500">Looca converted the uploaded speech into text.</p>
+                      </div>
+                    </div>
+                    <div className="rounded-[28px] border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
+                      <p className="text-base leading-7 text-zinc-800">{transcriptResult}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center space-y-8">
+                    <div className="space-y-3 text-center">
+                      <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto shadow-xl">
+                        <tool.icon className="w-8 h-8 text-white" />
+                      </div>
+                      <h1 className="text-2xl font-black text-black tracking-tight">{tool.title}</h1>
+                      <p className="text-zinc-500 font-medium text-sm max-w-md mx-auto">{tool.description}</p>
                     </div>
 
                     <div
-                      className="w-full max-w-xl p-12 border-4 border-dashed border-zinc-100 rounded-[48px] bg-white hover:border-zinc-200 hover:bg-zinc-50 transition-all cursor-pointer group shadow-2xl"
+                      className="w-full max-w-md p-6 border-2 border-dashed border-zinc-100 rounded-[28px] bg-white hover:border-zinc-200 hover:bg-zinc-50 transition-all cursor-pointer group shadow-lg"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileSelect} accept="audio/*" />
-                      <div className="space-y-6 text-center">
-                        <div className="w-24 h-24 rounded-3xl bg-zinc-100 flex items-center justify-center mx-auto group-hover:scale-110 group-hover:bg-black transition-all duration-500">
-                          <Upload className="w-10 h-10 text-zinc-400 group-hover:text-white" />
+                      <div className="space-y-4 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mx-auto group-hover:scale-105 group-hover:bg-black transition-all duration-500">
+                          <Upload className="w-7 h-7 text-zinc-400 group-hover:text-white" />
                         </div>
                         <div className="space-y-2">
-                          <h3 className="text-2xl font-black text-black">{tool.action}</h3>
-                          <p className="text-zinc-400 font-medium text-xs font-black uppercase tracking-widest">Click to choose an audio file</p>
+                          <h3 className="text-xl font-black text-black">{tool.action}</h3>
+                          <p className="text-zinc-400 font-medium text-[10px] font-black uppercase tracking-widest">Click to choose an audio file</p>
                         </div>
                       </div>
                     </div>
@@ -434,12 +502,12 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
             )}
           </div>
 
-          {slug !== 'vfx' && (
-            <div className="h-20 border-t border-zinc-50 flex items-center justify-between px-8 shrink-0 bg-white/80 backdrop-blur-md">
+          {slug !== 'vfx' && slug !== 'isolator' && (
+            <div className="h-16 border-t border-zinc-50 flex items-center justify-between px-6 shrink-0 bg-white/80 backdrop-blur-md">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2 text-zinc-400">
-                  <div className="w-4 h-4 rounded-full border-2 border-zinc-100 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-200" />
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-100 flex items-center justify-center">
+                    <div className="w-1 h-1 rounded-full bg-zinc-200" />
                   </div>
                 </div>
               </div>
@@ -447,14 +515,14 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
               <div className="flex items-center gap-6">
                 {slug === 'tts' && (
                   <>
-                    <div className="text-xs font-bold text-zinc-300">
-                      <span className={ttsText.length > 4500 ? 'text-amber-500' : 'text-zinc-400'}>{ttsText.length.toLocaleString()}</span> / 5,000
+                    <div className="text-[10px] font-bold text-zinc-300">
+                      <span className={ttsText.length > 4500 ? 'text-amber-500' : 'text-zinc-400'}>{ttsText.length.toLocaleString()}</span> <span className="text-zinc-400">/ 5,000</span>
                     </div>
                   </>
                 )}
 
                 <Button
-                  className="h-12 px-12 rounded-2xl text-sm font-black transition-all bg-black text-white hover:bg-zinc-800 shadow-xl shadow-zinc-200 disabled:opacity-30 active:scale-95"
+                  className="h-10 px-8 rounded-xl text-xs font-black transition-all bg-black text-white hover:bg-zinc-800 shadow-xl shadow-zinc-200 disabled:opacity-30 active:scale-95"
                   disabled={(slug === 'tts' ? !ttsText : false) || stage === 'processing'}
                   onClick={() => slug === 'tts' ? startProcessing() : fileInputRef.current?.click()}
                 >
@@ -465,35 +533,35 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
           )}
         </div>
 
-        {slug !== 'vfx' && (
-          <aside className="w-[420px] border-l border-zinc-100 bg-white flex flex-col shrink-0 overflow-hidden">
-            <div className="px-6 pt-6 shrink-0 bg-white">
+        {slug !== 'vfx' && slug !== 'isolator' && (
+          <aside className="w-[300px] border-l border-zinc-100 bg-white flex flex-col shrink-0 overflow-hidden">
+            <div className="px-5 pt-5 shrink-0 bg-white">
               <div className="flex border-b border-zinc-100">
                 <button
-                  className={`pb-4 pr-8 text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === 'settings' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
+                  className={`pb-3 pr-6 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'settings' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
                   onClick={() => setActiveTab('settings')}
                 >
                   Settings
                   {activeTab === 'settings' && (
-                    <motion.div layoutId="sidebar-tab" className="absolute bottom-0 left-0 right-8 h-[2px] bg-black" />
+                    <motion.div layoutId="sidebar-tab" className="absolute bottom-0 left-0 right-6 h-[2px] bg-black" />
                   )}
                 </button>
                 <button
-                  className={`pb-4 px-8 text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === 'history' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
+                  className={`pb-3 px-6 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === 'history' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
                   onClick={() => setActiveTab('history')}
                 >
                   History
                   {activeTab === 'history' && (
-                    <motion.div layoutId="sidebar-tab" className="absolute bottom-0 left-8 right-8 h-[2px] bg-black" />
+                    <motion.div layoutId="sidebar-tab" className="absolute bottom-0 left-8 right-6 h-[2px] bg-black" />
                   )}
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
               {activeTab === 'settings' ? (
                 <>
-                  {slug === 'tts' ? (
+                  {slug === 'tts' || slug === 'voice-changer' ? (
                     <>
                       <div className="space-y-4">
                         <label className="text-[11px] font-black text-zinc-400 uppercase tracking-widest">Select Voice</label>
@@ -501,7 +569,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                           <div className="relative group">
                             <button
                               onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
-                              className="w-full h-12 px-4 flex items-center justify-between bg-white border border-zinc-100 rounded-2xl text-xs font-bold text-zinc-900 focus:outline-none focus:border-zinc-200 shadow-sm cursor-pointer transition-all hover:bg-zinc-50"
+                              className="w-full h-10 px-4 flex items-center justify-between bg-white border border-zinc-100 rounded-xl text-[11px] font-bold text-zinc-900 focus:outline-none focus:border-zinc-200 shadow-sm cursor-pointer transition-all hover:bg-zinc-50"
                             >
                               <span>
                                 {[
@@ -570,7 +638,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                       </div>
 
                       {/* Sliders */}
-                      <div className="space-y-10 pt-4">
+                      <div className="space-y-6 pt-2">
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Speed</label>
@@ -630,7 +698,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
                           <div className="relative group">
                             <button
                               onClick={() => setIsOutputFormatDropdownOpen(!isOutputFormatDropdownOpen)}
-                              className="w-full h-12 px-4 flex items-center justify-between bg-white border border-zinc-100 rounded-2xl text-xs font-bold text-zinc-900 focus:outline-none focus:border-zinc-200 shadow-sm cursor-pointer transition-all hover:bg-zinc-50"
+                              className="w-full h-10 px-4 flex items-center justify-between bg-white border border-zinc-100 rounded-xl text-[11px] font-bold text-zinc-900 focus:outline-none focus:border-zinc-200 shadow-sm cursor-pointer transition-all hover:bg-zinc-50"
                             >
                               <span>{ttsSettings.outputFormat}</span>
                               <motion.div animate={{ rotate: isOutputFormatDropdownOpen ? 180 : 0 }}>
@@ -697,44 +765,48 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
               ) : (
                 /* History Tab */
                 <div className="space-y-4">
-                  {history.length > 0 ? history.map((rec) => (
-                    <div 
-                      key={rec.id} 
-                    className="p-4 rounded-2xl border border-zinc-50 bg-white hover:border-zinc-100 transition-all cursor-pointer group"
-                    onClick={() => {
-                      setResultUrls({ original: rec.file_url, cleared: rec.file_url });
-                      setStage('result');
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{new Date(rec.created_at).toLocaleString()}</span>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); window.open(rec.file_url); }}><Download className="w-3 h-3" /></Button>
+                  {history.length > 0 ? (
+                    history.map((rec) => (
+                      <div
+                        key={rec.id}
+                        className="p-4 rounded-2xl border border-zinc-50 bg-white hover:border-zinc-100 transition-all cursor-pointer group"
+                        onClick={() => {
+                          setResultUrls({ original: rec.file_url, cleared: rec.file_url });
+                          setStage('result');
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{new Date(rec.created_at).toLocaleString()}</span>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); window.open(rec.file_url); }}><Download className="w-3 h-3" /></Button>
+                          </div>
+                        </div>
+                        <p className="text-xs font-medium text-zinc-600 line-clamp-2 leading-relaxed mb-3">
+                          {rec.ai_insight || 'Generated audio session'}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span className="text-[10px] font-bold text-zinc-900 uppercase tracking-tight">{rec.tool_type.toUpperCase()}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-xs font-medium text-zinc-600 line-clamp-2 leading-relaxed mb-3">
-                      {rec.ai_insight || 'Generated audio session'}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] font-bold text-zinc-900 uppercase tracking-tight">{rec.tool_type.toUpperCase()}</span>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center mb-4">
+                        <RotateCcw className="w-5 h-5 text-zinc-200" />
                       </div>
+                      <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">No history yet</h3>
                     </div>
-                  </div>
-                )) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center mb-4">
-                      <RotateCcw className="w-5 h-5 text-zinc-200" />
-                    </div>
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">No history yet</h3>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </aside>
+                  )}
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
       </main>
+
 
       {/* Bottom Player Bar */}
       <AnimatePresence>
@@ -764,7 +836,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
               </div>
 
               <div className="flex-1 flex items-center gap-6">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <RotateCcw className="w-4 h-4 text-zinc-400 cursor-pointer hover:text-zinc-900 transform scale-x-[-1]" />
                   <button
                     className="w-11 h-11 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:scale-105 transition-all"
@@ -792,14 +864,14 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
 
               <div className="flex items-center gap-3 min-w-[280px] justify-end">
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" className="h-9 w-9 p-0 text-zinc-400 hover:text-zinc-900"><ThumbsUp className="w-4 h-4" /></Button>
-                  <Button variant="ghost" className="h-9 w-9 p-0 text-zinc-400 hover:text-zinc-900"><ThumbsDown className="w-4 h-4" /></Button>
+                  <Button variant="ghost" className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-900"><ThumbsUp className="w-4 h-4" /></Button>
+                  <Button variant="ghost" className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-900"><ThumbsDown className="w-4 h-4" /></Button>
                 </div>
                 <div className="w-[1px] h-4 bg-zinc-100 mx-1" />
                 <Button variant="outline" className="h-9 px-4 rounded-lg bg-white border border-zinc-200 text-xs font-bold flex gap-2">
                   <Share2 className="w-4 h-4" /> Share
                 </Button>
-                <Button variant="outline" className="h-9 w-9 p-0 rounded-lg bg-white border border-zinc-200 flex items-center justify-center">
+                <Button variant="outline" className="h-6 w-6 p-0 rounded-lg bg-white border border-zinc-200 flex items-center justify-center">
                   <Download className="w-4 h-4" />
                 </Button>
                 <ChevronDown className="w-4 h-4 text-zinc-400" />

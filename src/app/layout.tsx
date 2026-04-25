@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Looca - Voice AI Intelligence',
-  description: 'Your AI that lives inside your computer. Voice-first intelligence for personal and enterprise use.',
+  description: 'Your voice-first personal action AI for accessibility, guidance, and real-world tasks.',
   manifest: '/manifest.json',
   themeColor: '#000000',
   icons: {

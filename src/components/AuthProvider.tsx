@@ -9,11 +9,6 @@ type User = {
   email?: string | null;
   image?: string | null;
   role?: string;
-  organization?: {
-    id: string;
-    name: string;
-    logo_url?: string;
-  } | null;
 };
 
 type AuthContextType = {
@@ -38,16 +33,26 @@ function AuthInner({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     try {
       const token = localStorage.getItem('looca_token');
-      if (!token) return;
+      if (!token) {
+        setUser({
+          id: (session?.user as { id?: string } | undefined)?.id ?? '',
+          name: session?.user?.name,
+          email: session?.user?.email,
+          image: session?.user?.image,
+          role: (session?.user as { role?: string } | undefined)?.role,
+        });
+        return;
+      }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/me`, {
+      const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
       }
     } catch (error) {
       console.error('Failed to refresh user:', error);

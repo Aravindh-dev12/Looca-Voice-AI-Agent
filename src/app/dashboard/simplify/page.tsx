@@ -29,7 +29,7 @@ export default function SimplifyDocumentPage() {
           Simplify a Document
         </h1>
         <p className="text-zinc-500 text-lg font-medium">
-          Give VIOS something difficult to read, and it will explain it simply.
+          Give Looca something difficult to read, and it will explain it simply.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function SimplifyDocumentPage() {
                     <Volume2 className="w-5 h-5 text-white" />
                   </div>
                   <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
-                    VIOS Simplified Version
+                    Looca simplified version
                   </span>
                 </div>
 
@@ -119,7 +119,7 @@ export default function SimplifyDocumentPage() {
           <ShieldCheck className="w-6 h-6 text-emerald-500" />
         </div>
         <p className="text-zinc-600 font-medium text-sm">
-          "VIOS removes the difficult words from government and bank letters so you can understand them easily."
+          Looca removes the difficult words from government and bank letters so you can understand them easily.
         </p>
       </div>
     </div>

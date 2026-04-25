@@ -496,8 +496,8 @@ export default function ArchitecturePage() {
         <Link className="btn-grand btn-primary" href="/agent" style={{ display: 'inline-flex' }}>
           <span>Launch Voice Agent</span>
         </Link>
-        <Link className="btn-grand btn-secondary" href="/enterprise" style={{ display: 'inline-flex', marginLeft: 16 }}>
-          <span>Enterprise Solutions</span>
+        <Link className="btn-grand btn-secondary" href="/upgrade" style={{ display: 'inline-flex', marginLeft: 16 }}>
+          <span>See Personal Plans</span>
         </Link>
       </div>
     </main>

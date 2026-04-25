@@ -16,7 +16,7 @@ export function Card({ children, className, noPadding, gradient }: CardProps) {
         'rounded-3xl border border-gray-200 backdrop-blur-xl',
         gradient
           ? 'bg-gradient-to-br from-white to-gray-50'
-          : 'bg-white',
+          : (!className?.includes('bg-') && 'bg-white'),
         'shadow-[0_22px_45px_rgba(0,0,0,0.08)]',
         !noPadding && 'p-6',
         className

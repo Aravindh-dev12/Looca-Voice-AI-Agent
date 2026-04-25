@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import Link from 'next/link';
 
 function ScrambleText({ text }: { text: string }) {
   const [displayText, setDisplayText] = useState(text);
@@ -179,10 +180,13 @@ export function FunctionCards() {
                     <p className="text-zinc-500 text-sm leading-relaxed mb-6">
                       {func.description}
                     </p>
-                    <button className="flex items-center gap-2 text-sm font-semibold text-zinc-900 hover:text-zinc-600 transition-colors group/btn">
+                    <Link 
+                      href={`/learn-more#feature-${func.number}`}
+                      className="flex items-center gap-2 text-sm font-semibold text-zinc-900 hover:text-zinc-600 transition-colors group/btn"
+                    >
                       Learn more 
                       <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Sliders, Type, FastForward, Eye, MessageCircle, LogOut, CheckCircle, ShieldCheck } from 'lucide-react';
-import { Card, Button, Badge } from '@/components/ui';
+import { CheckCircle, Eye, FastForward, LogOut, ShieldCheck, Sliders, Type } from 'lucide-react';
+import { Badge, Button, Card } from '@/components/ui';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function AccessibilitySettingsPage() {
@@ -12,127 +12,126 @@ export default function AccessibilitySettingsPage() {
   const [contrast, setContrast] = useState(100);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-20">
-      {/* Header - Simple & Calming */}
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-[10px] font-black text-black uppercase tracking-widest">
-          <Sliders className="w-3 h-3" />
-          Tuning
+    <div className="mx-auto max-w-5xl space-y-8 pb-20">
+      <div className="space-y-3">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <Sliders className="h-3.5 w-3.5" />
+          Cognitive settings
         </div>
-        <h1 className="text-3xl md:text-5xl font-black text-black tracking-tight">
-          Settings
-        </h1>
-        <p className="text-zinc-500 text-lg font-medium">
-          Change how VIOS talks and looks to fit your needs.
+        <h1 className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">Settings</h1>
+        <p className="max-w-2xl text-base leading-7 text-slate-600">
+          Tune how Looca speaks, displays information, and adapts to your accessibility preferences.
         </p>
       </div>
 
-      {/* Main Settings Sliders */}
-      <div className="space-y-6">
-        <Card className="p-10 border-2 border-zinc-100 bg-white">
-          <div className="space-y-12">
-            
-            {/* AI Speed */}
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <Card className="border border-slate-200 bg-white p-8">
+          <div className="space-y-10">
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center">
-                    <FastForward className="w-6 h-6 text-black" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
+                    <FastForward className="h-5 w-5 text-slate-950" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-black">Talking Speed</h3>
-                    <p className="text-zinc-500 text-sm font-medium">How fast should VIOS speak?</p>
+                    <h3 className="text-xl font-semibold text-slate-950">Talking speed</h3>
+                    <p className="text-sm text-slate-500">How fast Looca should speak.</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="px-4 py-1 rounded-full font-black text-black">{speed < 40 ? 'Slow' : speed > 70 ? 'Fast' : 'Normal'}</Badge>
+                <Badge variant="secondary" className="rounded-full px-4 py-1">
+                  {speed < 40 ? 'Slow' : speed > 70 ? 'Fast' : 'Normal'}
+                </Badge>
               </div>
               <input
                 type="range"
                 value={speed}
                 onChange={(e) => setSpeed(parseInt(e.target.value))}
-                className="w-full h-3 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-black"
+                className="h-3 w-full cursor-pointer appearance-none rounded-full bg-slate-100 accent-black"
               />
             </div>
 
-            {/* Text Size */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center">
-                    <Type className="w-6 h-6 text-black" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
+                    <Type className="h-5 w-5 text-slate-950" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-black">Text Size</h3>
-                    <p className="text-zinc-500 text-sm font-medium">How big should the words be?</p>
+                    <h3 className="text-xl font-semibold text-slate-950">Text size</h3>
+                    <p className="text-sm text-slate-500">Scale interface text for comfort.</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="px-4 py-1 rounded-full font-black text-black">{size < 40 ? 'Small' : size > 70 ? 'Big' : 'Normal'}</Badge>
+                <Badge variant="secondary" className="rounded-full px-4 py-1">
+                  {size < 40 ? 'Small' : size > 70 ? 'Large' : 'Normal'}
+                </Badge>
               </div>
               <input
                 type="range"
                 value={size}
                 onChange={(e) => setSize(parseInt(e.target.value))}
-                className="w-full h-3 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-black"
+                className="h-3 w-full cursor-pointer appearance-none rounded-full bg-slate-100 accent-black"
               />
             </div>
 
-            {/* Visual Contrast */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center">
-                    <Eye className="w-6 h-6 text-black" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
+                    <Eye className="h-5 w-5 text-slate-950" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-black">Screen Contrast</h3>
-                    <p className="text-zinc-500 text-sm font-medium">Make the screen easier to see.</p>
+                    <h3 className="text-xl font-semibold text-slate-950">Screen contrast</h3>
+                    <p className="text-sm text-slate-500">Make key UI surfaces easier to read.</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="px-4 py-1 rounded-full font-black text-black">{contrast > 80 ? 'High' : 'Standard'}</Badge>
+                <Badge variant="secondary" className="rounded-full px-4 py-1">
+                  {contrast > 80 ? 'High' : 'Standard'}
+                </Badge>
               </div>
               <input
                 type="range"
                 value={contrast}
                 onChange={(e) => setContrast(parseInt(e.target.value))}
-                className="w-full h-3 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-black"
+                className="h-3 w-full cursor-pointer appearance-none rounded-full bg-slate-100 accent-black"
               />
             </div>
-
           </div>
         </Card>
 
-        {/* User Profile Card */}
-        <Card className="p-8 border-2 border-zinc-100 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-full bg-zinc-100 border-4 border-white shadow-lg flex items-center justify-center text-2xl font-black text-black overflow-hidden uppercase">
-              {user?.image ? (
-                <img src={user.image} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span>{user?.name?.[0] || 'U'}</span>
-              )}
-            </div>
-            <div>
-              <h4 className="text-2xl font-black text-black">{user?.name || 'User'}</h4>
-              <p className="text-zinc-400 font-medium">{user?.email}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Protected by VIOS</span>
+        <div className="space-y-6">
+          <Card className="border border-slate-200 bg-white p-6">
+            <div className="flex items-center gap-5">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 text-2xl font-bold uppercase text-slate-950 shadow-sm">
+                {user?.image ? (
+                  <img src={user.image} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span>{user?.name?.[0] || 'U'}</span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="text-2xl font-semibold text-slate-950">{user?.name || 'User'}</h4>
+                <p className="truncate text-sm text-slate-500">{user?.email}</p>
+                <div className="mt-3 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">Protected by Looca</span>
+                </div>
               </div>
             </div>
-          </div>
-          <Button variant="danger" className="rounded-full px-8 h-12" onClick={logout}>
-            <LogOut className="w-4 h-4 mr-2" /> Sign Out
-          </Button>
-        </Card>
-      </div>
+            <Button variant="danger" className="mt-6 h-12 rounded-full px-6" onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </Card>
 
-      {/* Assurance Card */}
-      <div className="bg-black p-10 rounded-[2.5rem] relative overflow-hidden">
-        <CheckCircle className="absolute -bottom-6 -right-6 w-32 h-32 text-white/5" />
-        <h3 className="text-white text-2xl font-black mb-4">"Your comfort is our priority."</h3>
-        <p className="text-white/60 font-medium max-w-sm">
-          VIOS automatically adjusts to you the more you talk, but you can always change these sliders anytime.
-        </p>
+          <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-slate-950 p-8 text-white">
+            <CheckCircle className="absolute -bottom-6 -right-6 h-32 w-32 text-white/5" />
+            <h3 className="mb-4 text-2xl font-semibold tracking-tight">Your comfort stays in control.</h3>
+            <p className="max-w-sm text-sm leading-7 text-white/70">
+              Looca adapts to how you speak over time, but these settings always let you decide the pace, readability,
+              and visual clarity.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

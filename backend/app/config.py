@@ -32,6 +32,8 @@ class Settings(BaseSettings):
 
     # OpenAI
     OPENAI_API_KEY: str = ""
+    OPENAI_TTS_MODEL: str = "gpt-4o-mini-tts"
+    OPENAI_STT_MODEL: str = "gpt-4o-mini-transcribe"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

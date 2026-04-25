@@ -54,7 +54,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/' });
+    setError('Google sign-in needs backend token sync before it can be used safely here.');
   };
 
   return (

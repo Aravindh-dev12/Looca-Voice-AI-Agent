@@ -3,6 +3,8 @@ import { ensureCollection, upsertKnowledgePoint } from '../src/lib/qdrant';
 import docs from '../data/seed-docs.json' with { type: 'json' };
 
 async function main() {
+  const prismaUnsafe = prisma as any;
+
   // Seed plans for enterprise subscriptions
   const plans = [
     {
@@ -44,7 +46,7 @@ async function main() {
   ];
 
   for (const plan of plans) {
-    await prisma.plan.upsert({
+    await prismaUnsafe.plan.upsert({
       where: { name: plan.name },
       update: plan,
       create: plan,

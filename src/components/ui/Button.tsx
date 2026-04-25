@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   children: React.ReactNode;
@@ -23,6 +23,7 @@ export function Button({
   const variants = {
     primary: 'bg-black text-white border border-black hover:bg-zinc-800 focus:ring-black',
     secondary: 'bg-gray-50 border border-zinc-200 text-black hover:bg-zinc-100 focus:ring-gray-400',
+    outline: 'bg-white border border-zinc-200 text-black hover:bg-zinc-50 focus:ring-gray-400',
     ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-400',
     danger: 'bg-red-500/10 border border-red-500/30 text-red-600 hover:bg-red-500/20 focus:ring-red-500',
   };

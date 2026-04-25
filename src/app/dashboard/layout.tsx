@@ -5,5 +5,5 @@ export default function UserDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardLayout type="user">{children}</DashboardLayout>;
+  return <DashboardLayout>{children}</DashboardLayout>;
 }

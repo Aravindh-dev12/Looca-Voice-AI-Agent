@@ -1,9 +1,11 @@
+import os
 import time
+import shutil
 import logging
 from datetime import timedelta
 from typing import Optional
 
-from fastapi import FastAPI, Depends, HTTPException, status, Query, File, UploadFile, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Query, File, UploadFile, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -57,7 +59,6 @@ app = FastAPI(
 )
 
 # Ensure uploads directory exists
-import os
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
@@ -152,6 +153,97 @@ class OrganizationResponse(BaseModel):
     plan: str
     owner_id: str
 
+
+OPENAI_VOICE_MAP = {
+    "roger": "onyx",
+    "rachel": "sage",
+    "emma": "coral",
+    "james": "ash",
+    "lily": "ballad",
+    "clyde": "verse",
+}
+
+
+def get_output_format(output_format: str) -> str:
+    format_map = {
+        "MP3 44.1 kHz (128kbps)": "mp3",
+        "MP3 44.1 kHz (192kbps)": "mp3",
+        "WAV 44.1 kHz": "wav",
+    }
+    return format_map.get(output_format, "wav")
+
+
+async def generate_openai_speech(
+    text: str,
+    voice: str,
+    model: str,
+    output_format: str,
+    destination: str,
+    instructions: Optional[str] = None,
+):
+    if not settings.OPENAI_API_KEY:
+        raise HTTPException(status_code=400, detail="OPENAI_API_KEY is required for proprietary audio generation")
+
+    headers = {
+        "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model or "gpt-4o-mini-tts",
+        "voice": voice,
+        "input": text,
+        "response_format": output_format,
+    }
+
+    if instructions:
+        payload["instructions"] = instructions
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        response = await client.post(
+            "https://api.openai.com/v1/audio/speech",
+            headers=headers,
+            json=payload,
+        )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+
+    with open(destination, "wb") as generated_audio:
+        generated_audio.write(response.content)
+
+
+async def transcribe_with_openai(filepath: str, model: str, language: Optional[str] = None):
+    if not settings.OPENAI_API_KEY:
+        raise HTTPException(status_code=400, detail="OPENAI_API_KEY is required for speech-to-text")
+
+    headers = {
+        "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+    }
+    data = {
+        "model": model or "gpt-4o-mini-transcribe",
+        "response_format": "json",
+    }
+
+    if language:
+        data["language"] = language
+
+    with open(filepath, "rb") as source_audio:
+        files = {
+            "file": (os.path.basename(filepath), source_audio, "application/octet-stream"),
+        }
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(
+                "https://api.openai.com/v1/audio/transcriptions",
+                headers=headers,
+                data=data,
+                files=files,
+            )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+
+    return response.json()
+
 # ===== AUTH ROUTES =====
 
 @app.post("/api/auth/signup", response_model=TokenResponse)
@@ -235,39 +327,47 @@ async def text_to_speech(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Generate TTS using edge-tts as the open source fallback
-        import edge_tts
-        import os
-        import time
-
         file_id = f"tts_{int(time.time())}"
-        filename = f"{file_id}.wav"
+        voice_id = OPENAI_VOICE_MAP.get(req.voice.lower(), "alloy")
+        output_format = get_output_format(req.settings.outputFormat)
+        filename = f"{file_id}.{output_format}"
         filepath = os.path.join(UPLOAD_DIR, filename)
+        ai_insight = ""
 
-        # Map frontend voices to Edge TTS voices
-        voice_map = {
-            "roger": "en-US-GuyNeural",
-            "rachel": "en-US-JennyNeural",
-            "emma": "en-GB-SoniaNeural",
-            "james": "en-GB-RyanNeural",
-            "lily": "en-AU-NatashaNeural",
-            "clyde": "en-US-ChristopherNeural"
-        }
-        
-        target_voice = voice_map.get(req.voice.lower(), "en-US-ChristopherNeural")
-        
-        # Adjust speed (+/- percentage)
-        speed_percent = int((req.settings.speed - 1.0) * 100)
-        speed_str = f"+{speed_percent}%" if speed_percent >= 0 else f"{speed_percent}%"
+        if settings.OPENAI_API_KEY:
+            instructions = (
+                f"Speak clearly for accessibility. Keep the delivery natural and helpful. "
+                f"Target speaking speed {req.settings.speed:.2f}x with moderate expression."
+            )
+            await generate_openai_speech(
+                text=req.text,
+                voice=voice_id,
+                model=req.model or settings.OPENAI_TTS_MODEL,
+                output_format=output_format,
+                destination=filepath,
+                instructions=instructions,
+            )
+            ai_insight = f"Generated with OpenAI {req.model or settings.OPENAI_TTS_MODEL} using the {voice_id} voice."
+        else:
+            import edge_tts
 
-        # Generate audio directly with edge_tts
-        communicate = edge_tts.Communicate(text=req.text, voice=target_voice, rate=speed_str)
-        mp3_filepath = os.path.join(UPLOAD_DIR, f"{file_id}.mp3")
-        await communicate.save(mp3_filepath)
+            voice_map = {
+                "roger": "en-US-GuyNeural",
+                "rachel": "en-US-JennyNeural",
+                "emma": "en-GB-SoniaNeural",
+                "james": "en-GB-RyanNeural",
+                "lily": "en-AU-NatashaNeural",
+                "clyde": "en-US-ChristopherNeural"
+            }
 
-        # Convert to WAV using pydub/soundfile or just use mp3 and rename to wav for compatibility with frontend
-        import shutil
-        shutil.move(mp3_filepath, filepath)
+            target_voice = voice_map.get(req.voice.lower(), "en-US-ChristopherNeural")
+            speed_percent = int((req.settings.speed - 1.0) * 100)
+            speed_str = f"+{speed_percent}%" if speed_percent >= 0 else f"{speed_percent}%"
+            mp3_filepath = os.path.join(UPLOAD_DIR, f"{file_id}.mp3")
+            communicate = edge_tts.Communicate(text=req.text, voice=target_voice, rate=speed_str)
+            await communicate.save(mp3_filepath)
+            shutil.move(mp3_filepath, filepath)
+            ai_insight = f"Generated with fallback voice synthesis because OPENAI_API_KEY is not configured."
 
         # 3. Save to DB
         record = AudioRecord(
@@ -280,7 +380,7 @@ async def text_to_speech(
             cleared_url=f"/uploads/{filename}",
             tool_type="tts",
             status="completed",
-            ai_insight=f"Audio successfully generated using open-source TTS model based on {req.model} prompt."
+            ai_insight=ai_insight,
         )
         db.add(record)
         await db.commit()
@@ -289,7 +389,7 @@ async def text_to_speech(
         return {
             "id": record.id,
             "audio_url": f"/uploads/{filename}",
-            "ai_insight": f"Audio successfully generated using open-source TTS model based on {req.model} prompt."
+            "ai_insight": ai_insight
         }
 
     except Exception as e:
@@ -397,6 +497,119 @@ async def generate_vfx(
 
     except Exception as e:
         logger.error(f"VFX FAILED: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/vios/stt")
+async def speech_to_text(
+    file: UploadFile = File(...),
+    model: str = Form(settings.OPENAI_STT_MODEL),
+    language: Optional[str] = Form(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        file_ext = file.filename.split(".")[-1] if file.filename and "." in file.filename else "wav"
+        file_id = f"stt_{int(time.time())}"
+        source_filename = f"{file_id}.{file_ext}"
+        source_path = os.path.join(UPLOAD_DIR, source_filename)
+
+        with open(source_path, "wb") as uploaded_audio:
+            uploaded_audio.write(await file.read())
+
+        transcription = await transcribe_with_openai(source_path, model, language)
+        transcript_text = transcription.get("text", "").strip()
+
+        record = AudioRecord(
+            user_id=current_user.id,
+            organization_id=current_user.organization_id,
+            filename=source_filename,
+            original_filename=file.filename,
+            file_url=f"/uploads/{source_filename}",
+            original_url=f"/uploads/{source_filename}",
+            cleared_url=f"/uploads/{source_filename}",
+            tool_type="stt",
+            status="completed",
+            ai_insight=f"Transcribed with OpenAI {model}.",
+        )
+        db.add(record)
+        await db.commit()
+        await db.refresh(record)
+
+        return {
+            "id": record.id,
+            "audio_url": f"/uploads/{source_filename}",
+            "transcript": transcript_text,
+            "language": transcription.get("language") or language or "auto",
+            "ai_insight": record.ai_insight,
+        }
+    except Exception as e:
+        logger.error(f"STT FAILED: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/vios/voice-changer")
+async def voice_changer(
+    file: UploadFile = File(...),
+    voice: str = Form("alloy"),
+    model: str = Form(settings.OPENAI_TTS_MODEL),
+    transcribe_model: str = Form(settings.OPENAI_STT_MODEL),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        file_ext = file.filename.split(".")[-1] if file.filename and "." in file.filename else "wav"
+        file_id = f"voice_{int(time.time())}"
+        source_filename = f"{file_id}_input.{file_ext}"
+        output_filename = f"{file_id}_changed.wav"
+        source_path = os.path.join(UPLOAD_DIR, source_filename)
+        output_path = os.path.join(UPLOAD_DIR, output_filename)
+
+        with open(source_path, "wb") as uploaded_audio:
+            uploaded_audio.write(await file.read())
+
+        transcript = await transcribe_with_openai(source_path, transcribe_model)
+        transcript_text = transcript.get("text", "").strip()
+
+        if not transcript_text:
+            raise HTTPException(status_code=400, detail="Unable to recover speech content from the uploaded audio")
+
+        target_voice = OPENAI_VOICE_MAP.get(voice.lower(), voice.lower() or "alloy")
+        await generate_openai_speech(
+            text=transcript_text,
+            voice=target_voice,
+            model=model or settings.OPENAI_TTS_MODEL,
+            output_format="wav",
+            destination=output_path,
+            instructions="Preserve the original intent, but present it as a polished, confident accessibility-friendly voice.",
+        )
+
+        record = AudioRecord(
+            user_id=current_user.id,
+            organization_id=current_user.organization_id,
+            filename=output_filename,
+            original_filename=file.filename,
+            file_url=f"/uploads/{output_filename}",
+            original_url=f"/uploads/{source_filename}",
+            cleared_url=f"/uploads/{output_filename}",
+            tool_type="voice-changer",
+            status="completed",
+            ai_insight=f"Voice changed using OpenAI {model or settings.OPENAI_TTS_MODEL} with transcript recovery via {transcribe_model}.",
+        )
+        db.add(record)
+        await db.commit()
+        await db.refresh(record)
+
+        return {
+            "id": record.id,
+            "original_url": f"/uploads/{source_filename}",
+            "cleared_url": f"/uploads/{output_filename}",
+            "audio_url": f"/uploads/{output_filename}",
+            "transcript": transcript_text,
+            "ai_insight": record.ai_insight,
+        }
+    except Exception as e:
+        logger.error(f"VOICE CHANGER FAILED: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/vios/process")

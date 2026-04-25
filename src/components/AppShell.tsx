@@ -10,7 +10,7 @@ const nav = [
   { href: '/', label: 'Overview' },
   { href: '/agent', label: 'Voice Agent' },
   { href: '/architecture', label: 'Architecture' },
-  { href: '/enterprise', label: 'Enterprise' },
+  { href: '/upgrade', label: 'Upgrade' },
   { href: '/knowledge', label: 'Knowledge' },
 ];
 
@@ -27,8 +27,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/" className="brand">
             <img src="/l.png" alt="Looca" width={44} height={44} style={{ borderRadius: '14px' }} />
             <div>
-              <h1>Looca AGI</h1>
-              <p>Voice-first intelligence architecture</p>
+              <h1>Looca</h1>
+              <p>Voice-first personal action intelligence</p>
             </div>
           </Link>
 

@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'accent';
+type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'accent' | 'outline' | 'secondary';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -19,6 +19,8 @@ export function Badge({ children, variant = 'default', className, dot }: BadgePr
     danger: 'bg-zinc-800 border-zinc-800 text-zinc-100',
     info: 'bg-zinc-200 border-zinc-300 text-zinc-900',
     accent: 'bg-zinc-950 border-zinc-950 text-white',
+    outline: 'bg-white border-zinc-200 text-zinc-700',
+    secondary: 'bg-zinc-50 border-zinc-200 text-zinc-700',
   };
 
   const dotColors = {
@@ -28,6 +30,8 @@ export function Badge({ children, variant = 'default', className, dot }: BadgePr
     danger: 'bg-zinc-200',
     info: 'bg-black',
     accent: 'bg-black',
+    outline: 'bg-zinc-400',
+    secondary: 'bg-zinc-400',
   };
 
   return (

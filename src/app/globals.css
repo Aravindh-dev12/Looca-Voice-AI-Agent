@@ -29,6 +29,7 @@
   
   html {
     background: #ffffff;
+    scroll-behavior: smooth;
   }
 
   body {

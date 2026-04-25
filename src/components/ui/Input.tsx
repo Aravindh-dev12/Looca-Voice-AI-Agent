@@ -31,8 +31,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'text-white placeholder-[#64748b]',
               'focus:outline-none focus:border-[#7cdbff]/50 focus:ring-1 focus:ring-[#7cdbff]/30',
               'transition-all duration-200',
-              icon && 'pl-12',
-              error && 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30',
+              icon ? 'pl-12' : undefined,
+              error ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/30' : undefined,
               className
             )}
             {...props}

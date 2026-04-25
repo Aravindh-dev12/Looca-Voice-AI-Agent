@@ -147,18 +147,18 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-6">
               <Link href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
               <Link href="#personal" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Personal</Link>
-              <Link href="#enterprise" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Enterprise</Link>
+              <Link href="/upgrade" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Upgrade</Link>
             </div>
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-4">
                   <div className="hidden sm:flex flex-col items-end">
-                    <span className="text-sm font-black text-gray-900 leading-none">{user.name}</span>
+                    <span className="text-sm font-black text-gray-900 leading-none">{user.name || 'Looca user'}</span>
                   </div>
                   <Link href="/dashboard">
                     <div className="relative group">
                       <div className="w-10 h-10 rounded-full border-2 border-black overflow-hidden flex items-center justify-center text-black font-black text-lg uppercase transition-all group-hover:bg-black group-hover:text-white">
-                        {user.name[0]}
+                        {(user.name || 'U')[0]}
                       </div>
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                     </div>
@@ -249,7 +249,7 @@ export default function LandingPage() {
             Ready to experience the future of voice AI?
           </h2>
           <p className="text-gray-600 mb-8 text-lg">
-            Join thousands of users and organizations already using Looca to transform
+            Join people using Looca to transform
             how they interact with technology.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -270,7 +270,7 @@ export default function LandingPage() {
               <h4 className="font-bold text-gray-900 text-lg mb-5">Product</h4>
               <ul className="space-y-3 text-base text-gray-500">
                 <li><Link href="/dashboard" className="hover:text-gray-900 transition-colors">Personal</Link></li>
-                <li><Link href="/company/signup" className="hover:text-gray-900 transition-colors">Enterprise</Link></li>
+                <li><Link href="/upgrade" className="hover:text-gray-900 transition-colors">Upgrade</Link></li>
                 <li><Link href="#" className="hover:text-gray-900 transition-colors">Pricing</Link></li>
               </ul>
             </div>
