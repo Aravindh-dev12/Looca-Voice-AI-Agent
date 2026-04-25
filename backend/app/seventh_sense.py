@@ -73,51 +73,40 @@ async def predictive_preload(user_id: str) -> dict:
 
 
 async def execute_tool_call(tool_name: str, params: dict) -> dict:
-    """Idea 04: VAPI action agent — Claude tool_use does real bookings.
+    """Idea 04: VAPI action agent — Gemini 2.0 Flash tool_use does real bookings.
     Looca doesn't answer 'how to book' — it books.
     """
-    if settings.ANTHROPIC_API_KEY:
-        import anthropic
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    if settings.OPENROUTER_API_KEY:
+        import httpx
+        
+        headers = {
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        
+        payload = {
+            "model": "google/gemini-2.0-flash-001",
+            "messages": [
+                {"role": "system", "content": "You are a tool execution engine. Return JSON only."},
+                {"role": "user", "content": f"Execute tool {tool_name} with parameters {params}. Respond with the result of this action as a JSON object."}
+            ],
+            "response_format": {"type": "json_object"}
+        }
 
-        tool_definitions = [
-            {
-                "name": "book_appointment",
-                "description": "Book an appointment at a hospital",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "hospital": {"type": "string"},
-                        "department": {"type": "string"},
-                        "date": {"type": "string"},
-                    },
-                    "required": ["hospital", "department"],
-                },
-            },
-            {
-                "name": "find_nearest_hospital",
-                "description": "Find the nearest hospital with available beds",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "service_type": {"type": "string"},
-                        "location": {"type": "string"},
-                    },
-                    "required": ["service_type"],
-                },
-            },
-        ]
-
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            tools=tool_definitions,
-            messages=[{"role": "user", "content": f"Execute: {tool_name} with params {params}"}],
-        )
-
-        for block in response.content:
-            if block.type == "tool_use":
-                return {"tool": block.name, "input": block.input, "status": "executed"}
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    import json
+                    result_content = data["choices"][0]["message"]["content"]
+                    return {"tool": tool_name, "result": json.loads(result_content), "status": "executed"}
+        except Exception as e:
+            logger.error(f"Tool execution failed: {e}")
 
     # Demo fallback
     return {
@@ -126,6 +115,7 @@ async def execute_tool_call(tool_name: str, params: dict) -> dict:
         "status": "demo_mode",
         "result": f"Would execute {tool_name} with {params} in production",
     }
+
 
 
 async def causal_reasoning(query: str) -> dict:

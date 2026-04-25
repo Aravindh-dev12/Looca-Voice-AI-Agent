@@ -96,7 +96,7 @@ export function FunctionCards() {
   const textScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.9]);
 
   return (
-    <section ref={containerRef} className="relative bg-white" style={{ height: '300vh' }}>
+    <section ref={containerRef} className="relative" style={{ height: '300vh' }}>
       {/* Sticky container */}
       <div className="sticky top-0 h-screen overflow-hidden">
         
@@ -119,7 +119,7 @@ export function FunctionCards() {
             </motion.div>
             
             <h2 className="text-[12vw] md:text-[10vw] font-black text-black leading-[0.75] mb-12 uppercase tracking-tighter">
-              THE POWER
+              THE MAGIC
             </h2>
             <div className="flex items-center justify-center gap-4 mt-4">
               <span className="text-5xl md:text-7xl lg:text-[8vw] font-black text-black leading-none">OF</span>

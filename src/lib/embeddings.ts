@@ -1,6 +1,6 @@
 import { normalizeText } from './utils';
 
-const VECTOR_SIZE = 384;
+const VECTOR_SIZE = 1024;
 
 export function embedText(text: string): number[] {
   const normalized = normalizeText(text);

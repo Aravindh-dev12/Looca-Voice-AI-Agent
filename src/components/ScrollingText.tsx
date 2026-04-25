@@ -58,7 +58,7 @@ export function ScrollingText() {
   });
 
   return (
-    <section ref={containerRef} className="relative bg-white" style={{ height: '300vh' }}>
+    <section ref={containerRef} className="relative" style={{ height: '300vh' }}>
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         <div className="w-full max-w-7xl mx-auto px-4">
           {textLines.map((line, index) => (

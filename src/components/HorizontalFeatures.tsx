@@ -2,39 +2,88 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Image from 'next/image';
-import { Brain, Shield, Mic, Globe, Heart, Wallet, BookOpen, Users, ChevronRight } from 'lucide-react';
+import { 
+  Brain, 
+  Shield, 
+  Mic, 
+  Globe, 
+  Heart, 
+  Wallet, 
+  BookOpen, 
+  Users, 
+  ChevronRight,
+  Activity,
+  AlertTriangle,
+  History,
+  Play,
+  CheckCircle2,
+  Lock,
+  Smartphone,
+  Star
+} from 'lucide-react';
 
 const features = [
   {
     number: '01',
     title: 'Voice Mirror',
     subtitle: 'Looca remembers what was said',
-    description: 'A child asks what the teacher said today. An elderly patient asks about medicines. Looca plays back exactly what matters medicine names, key decisions, next steps.',
+    description: 'A child asks what the teacher said today. An elderly patient asks about medicines. Looca plays back exactly what matters—medicine names, key decisions, next steps.',
     bullets: [
       'Separates each speaker\'s voice in group conversations',
       'Creates interactive Q&A quizzes for children',
       'Reads back only what matters in their dialect'
     ],
     icon: Brain,
-    color: 'from-zinc-900 to-zinc-700',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-blue-600 to-indigo-600',
+    viz: (
+      <div className="space-y-4 w-full px-6">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100 shadow-sm">
+           <Mic className="h-4 w-4 text-blue-600" />
+           <div className="h-2 w-32 bg-blue-200 rounded-full" />
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-zinc-100 shadow-xl space-y-3">
+           <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Looca Intelligence</p>
+           <p className="text-sm font-bold text-zinc-900">"The doctor said take Paracetamol at 2 PM."</p>
+           <div className="flex gap-2">
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">MEDICINE</span>
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">2:00 PM</span>
+           </div>
+        </div>
+      </div>
+    )
   },
   {
     number: '02',
     title: 'Emotional Fingerprint',
     subtitle: 'The 7th Sense',
-    description: 'Looca detects fear, confusion, urgency, and grief from voice prosody in 50 milliseconds before a single word is processed. A child\'s voice shows distress Looca quietly alerts the trusted adult.',
+    description: 'Looca detects fear, confusion, urgency, and grief from voice prosody in 50 milliseconds. A child\'s voice shows distress? Looca quietly alerts the trusted adult.',
     bullets: [
       '8-dimensional emotional fingerprint analysis',
       'Child safety protocol with silent guardian alerts',
       'Loneliness detection for elders living alone'
     ],
     icon: Heart,
-    color: 'from-zinc-100 to-zinc-200',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-rose-500 to-pink-600',
+    viz: (
+      <div className="relative h-40 w-full flex items-center justify-center">
+         <motion.div 
+           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+           transition={{ duration: 2, repeat: Infinity }}
+           className="absolute h-32 w-32 bg-rose-500 rounded-full blur-3xl"
+         />
+         <div className="relative z-10 flex gap-1 items-end h-16">
+            {[1,2,3,4,5,4,3,2,1].map((h, i) => (
+              <motion.div 
+                key={i}
+                animate={{ height: [10, h * 10, 10] }}
+                transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
+                className="w-1.5 bg-rose-500 rounded-full"
+              />
+            ))}
+         </div>
+         <div className="absolute bottom-0 text-[10px] font-black text-rose-600 uppercase tracking-widest">Urgency Detected: 92%</div>
+      </div>
+    )
   },
   {
     number: '03',
@@ -47,86 +96,174 @@ const features = [
       'Misinformation filter for fake WhatsApp forwards'
     ],
     icon: Mic,
-    color: 'from-zinc-400 to-zinc-600',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-orange-500 to-amber-600',
+    viz: (
+      <div className="p-6 w-full space-y-4">
+         <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+            <span className="text-[10px] font-black text-zinc-900 uppercase">Local News Hub</span>
+            <Globe className="h-3 w-3 text-zinc-300" />
+         </div>
+         <div className="space-y-2">
+            <h4 className="text-sm font-black leading-tight text-zinc-900 uppercase">New health center opens in Madurai tomorrow.</h4>
+            <p className="text-[10px] text-zinc-500 line-clamp-2 leading-relaxed">Source: Regional Press • Verified by Looca</p>
+         </div>
+         <div className="flex gap-2">
+            <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center">
+               <Play className="h-3 w-3 text-zinc-900" fill="currentColor" />
+            </div>
+            <div className="flex-1 h-2 bg-zinc-100 rounded-full self-center" />
+         </div>
+      </div>
+    )
   },
   {
     number: '04',
     title: 'Silent Guardian',
     subtitle: 'A child can always reach safety',
-    description: 'A 7-year-old is home alone and falls. They say \'Looca, I\'m hurt.\' Looca calmly guides them to first-aid step by step, in their language and silently notifies their parent.',
+    description: 'A 7-year-old is home alone and falls. They say "Looca, I\'m hurt." Looca calmly guides them to first-aid step by step and silently notifies their parent.',
     bullets: [
       'Complete first-aid voice guidance for emergencies',
-      'Stranger danger protocol: silent GPS alert to parent + police',
+      'Stranger danger protocol: silent GPS alert to parent',
       'Child speaks → Looca acts. Zero requirements from child'
     ],
     icon: Shield,
-    color: 'from-zinc-950 to-zinc-800',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-red-600 to-rose-700',
+    viz: (
+      <div className="bg-red-50 p-6 rounded-3xl border border-red-100 w-full space-y-4">
+         <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            <span className="text-[10px] font-black text-red-900 uppercase tracking-widest">Active Emergency</span>
+         </div>
+         <div className="space-y-1">
+            <p className="text-xs font-bold text-red-900 uppercase">Parent Notified</p>
+            <p className="text-[10px] text-red-600 font-medium">GPS: 13.0827° N, 80.2707° E</p>
+         </div>
+         <div className="p-3 rounded-xl bg-white border border-red-100 shadow-sm flex items-center gap-3">
+            <Shield className="h-4 w-4 text-red-600" />
+            <span className="text-[10px] font-bold text-zinc-900">"Apply pressure to the wound."</span>
+         </div>
+      </div>
+    )
   },
   {
     number: '05',
     title: 'Memory Palace',
     subtitle: 'Infinite patience for dementia care',
-    description: 'For dementia patients, repetition is reality. Looca never says \'as I mentioned.\' It answers every question as if it\'s the first time, with the same gentleness. Families get weekly cognitive tracking.',
+    description: 'For dementia patients, repetition is reality. Looca never says "as I mentioned." It answers every question as if it\'s the first time, with the same gentleness.',
     bullets: [
       'Purpose-built dementia protocol: zero impatience',
       'Longitudinal cognitive tracking for neurologists',
       'Absorbs the repeating-question load for caregivers'
     ],
     icon: Brain,
-    color: 'from-zinc-100 to-zinc-300',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-zinc-900 to-black',
+    viz: (
+      <div className="p-6 w-full space-y-4">
+         <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cognitive State</span>
+            <Activity className="h-3 w-3 text-zinc-300" />
+         </div>
+         <div className="h-20 w-full bg-zinc-50 rounded-xl border border-zinc-100 flex items-end justify-between px-2 pb-2">
+            {[30, 45, 40, 55, 50, 65, 60].map((h, i) => (
+               <div key={i} className="w-4 bg-zinc-900 rounded-t-sm" style={{ height: `${h}%` }} />
+            ))}
+         </div>
+         <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter italic">Weekly Trend: Stable +4% Improvement</p>
+      </div>
+    )
   },
   {
     number: '06',
     title: 'Voice Wallet',
     subtitle: 'Your money, accessible by speaking',
-    description: 'Check balance. Send money. Pay bills. Entirely by voice. No screen needed. No app required. When someone calls claiming to be your bank asking for OTP Looca interrupts: \'This is a scam.\'',
+    description: 'Check balance. Send money. Pay bills. Entirely by voice. No screen needed. When someone calls claiming to be your bank, Looca interrupts: "This is a scam."',
     bullets: [
       'Full UPI transaction by voice: balance, transfer, bills',
       'Built-in fraud shield detects scam call patterns',
       'Micro-savings intelligence suggests saving schemes'
     ],
     icon: Wallet,
-    color: 'from-zinc-800 to-zinc-950',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-emerald-600 to-teal-700',
+    viz: (
+      <div className="p-6 w-full space-y-4">
+         <div className="flex items-center justify-between">
+            <Smartphone className="h-4 w-4 text-zinc-900" />
+            <div className="px-2 py-1 rounded bg-emerald-100 text-emerald-700 text-[8px] font-black uppercase tracking-widest">Secure UPI</div>
+         </div>
+         <div className="p-4 rounded-2xl bg-white border border-zinc-100 shadow-xl text-center space-y-2">
+            <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto" />
+            <p className="text-xl font-black text-zinc-900">₹ 2,400</p>
+            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Sent to Ramesh</p>
+         </div>
+         <div className="p-2 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
+            <AlertTriangle className="h-3 w-3 text-red-600 shrink-0" />
+            <span className="text-[8px] font-black text-red-900 uppercase">Scam Detected • Blocked</span>
+         </div>
+      </div>
+    )
   },
   {
     number: '07',
     title: 'Story Mode',
     subtitle: 'Education as folk tales',
-    description: 'Why do we pay tax? What is hypertension? Looca explains anything as a 2-minute story with characters and conflict in local cultural settings. A child in Tamil Nadu hears a fisherman\'s story.',
+    description: 'Why do we pay tax? What is hypertension? Looca explains anything as a 2-minute story with characters and conflict in local cultural settings.',
     bullets: [
       'Civic concepts, health, science — all as oral folk tales',
       'Culturally adapted: fishermen, farmers, village elders',
       'Children comply with medication 3x more when they understand why'
     ],
     icon: BookOpen,
-    color: 'from-zinc-400 to-zinc-500',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-purple-600 to-fuchsia-700',
+    viz: (
+      <div className="relative p-6 w-full flex flex-col items-center justify-center text-center space-y-4">
+         <BookOpen className="h-16 w-16 text-purple-600 opacity-20 absolute" />
+         <Star className="h-10 w-10 text-purple-600 relative animate-spin-slow" />
+         <div className="space-y-1">
+            <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">Chapter 1: The Magic Crop</h4>
+            <p className="text-[9px] text-purple-600 italic">Explaining Fertilizer Balance through a fisherman's tale.</p>
+         </div>
+         <div className="flex gap-1">
+            {[1,2,3].map(i => <div key={i} className="h-1 w-8 rounded-full bg-purple-100" />)}
+         </div>
+      </div>
+    )
   },
   {
     number: '08',
     title: 'Grief Companion',
     subtitle: 'Sits with you in silence',
-    description: 'A widow calls Looca at 2am and doesn\'t say anything. She just wants to not be alone. Looca stays on the line. Says softly after 3 minutes: \'I\'m here. Take your time.\' It never hangs up until she does.',
+    description: 'A widow calls Looca at 2am and doesn\'t say anything. She just wants to not be alone. Looca stays on the line. Says softly: "I\'m here. Take your time."',
     bullets: [
       'Grief-aware mode activates for 90 days after bereavement',
       'Loneliness detection triggers family alerts',
       'Weekly emotional signals: "She laughed on Tuesday"'
     ],
     icon: Heart,
-    color: 'from-zinc-900 to-black',
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200'
+    color: 'from-zinc-100 to-zinc-200',
+    viz: (
+      <div className="p-8 w-full flex flex-col items-center justify-center space-y-6">
+         <div className="flex gap-2">
+            <motion.div 
+               animate={{ scale: [1, 1.2, 1] }}
+               transition={{ duration: 4, repeat: Infinity }}
+               className="h-12 w-12 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center"
+            >
+               <History className="h-6 w-6 text-zinc-400" />
+            </motion.div>
+         </div>
+         <div className="p-4 rounded-[32px] bg-white border border-zinc-100 shadow-lg relative max-w-[200px]">
+            <p className="text-xs text-zinc-500 italic leading-relaxed">"I'm here. Take your time."</p>
+            <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-white border-b border-l border-zinc-100 rotate-45" />
+         </div>
+         <div className="flex gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Companion Active</span>
+         </div>
+      </div>
+    )
   }
 ];
+
 function ScrambleText({ text }: { text: string }) {
   const [displayText, setDisplayText] = useState(text);
   const [trigger, setTrigger] = useState(0);
@@ -148,7 +285,6 @@ function ScrambleText({ text }: { text: string }) {
 
       if (iteration >= text.length + 2) {
         clearInterval(interval);
-        // Trigger again after 2 seconds
         setTimeout(() => setTrigger(t => t + 1), 2000);
       }
 
@@ -172,15 +308,11 @@ export function HorizontalFeatures() {
   const x = useTransform(scrollYProgress, [0, 0.15, 1], ["0%", "0%", "-800%"]);
 
   return (
-    <div ref={containerRef} className="relative" style={{ height: `${(features.length + 1) * 100}vh` }}>
-      <div className="sticky top-0 h-screen overflow-hidden bg-white">
-        {/* Horizontal scroll container */}
-        <motion.div
-          className="flex h-full"
-          style={{ x }}
-        >
-          {/* Hero Slide - Redesigned */}
-          <div className="w-screen h-full flex-shrink-0 flex items-center justify-center px-8 md:px-16 bg-white relative overflow-hidden">
+    <section ref={containerRef} className="relative" style={{ height: `${(features.length + 1) * 100}vh` }}>
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <motion.div className="flex h-full" style={{ x }}>
+          {/* Hero Slide */}
+          <div className="w-screen h-full flex-shrink-0 flex items-center justify-center px-8 md:px-16 relative overflow-hidden">
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
               style={{ backgroundImage: `radial-gradient(#000 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
 
@@ -220,11 +352,6 @@ export function HorizontalFeatures() {
                     "Not just an assistant, but a persistent intellectual companion that
                     understands the human condition through every syllable and silence."
                   </p>
-                  <div className="flex items-center justify-center gap-4 pt-4">
-                    <div className="h-px w-12 bg-zinc-200" />
-                    <div className="w-2 h-2 rounded-full border-2 border-zinc-300" />
-                    <div className="h-px w-12 bg-zinc-200" />
-                  </div>
                 </motion.div>
               </div>
             </div>
@@ -232,52 +359,47 @@ export function HorizontalFeatures() {
 
           {/* Feature Slides */}
           {features.map((feature, index) => {
-            const Icon = feature.icon;
             return (
               <div
                 key={feature.number}
                 className="w-screen h-full flex-shrink-0 flex items-center justify-center px-8 md:px-16"
               >
                 <div className="max-w-6xl w-full">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Left: Number & Content */}
-                    <div className="order-2 lg:order-1">
-                      <div className="flex items-start gap-6 mb-6">
-                        <span className="text-8xl font-bold text-gray-200">{feature.number}</span>
-                        <div>
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-2 ${feature.bgColor} ${feature.borderColor} border`}>
-                            {feature.subtitle}
-                          </span>
-                          <h3 className="text-3xl md:text-4xl font-bold text-gray-900">{feature.title}</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    {/* Left: Content */}
+                    <div className="order-2 lg:order-1 space-y-8">
+                      <div className="flex items-center gap-6">
+                        <span className="text-8xl font-black text-zinc-100 leading-none">{feature.number}</span>
+                        <div className="h-12 w-px bg-zinc-200" />
+                        <div className="space-y-1">
+                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{feature.subtitle}</span>
+                           <h3 className="text-4xl font-black text-zinc-900 tracking-tighter uppercase italic">{feature.title}</h3>
                         </div>
                       </div>
-                      <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                      <p className="text-zinc-500 text-lg leading-relaxed font-medium">
                         {feature.description}
                       </p>
-                      <ul className="space-y-3">
+                      <div className="grid grid-cols-1 gap-3">
                         {feature.bullets.map((bullet, i) => (
-                          <li key={i} className="flex items-start gap-3 text-gray-600">
-                            <div className={`w-5 h-5 rounded-full ${feature.bgColor} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                              <ChevronRight className="w-3 h-3 text-gray-700" />
-                            </div>
-                            <span>{bullet}</span>
-                          </li>
+                          <div key={i} className="flex items-center gap-3 text-sm font-bold text-zinc-700">
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+                            {bullet}
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
 
-                    {/* Right: Image */}
+                    {/* Right: Custom Visualizations */}
                     <div className="order-1 lg:order-2">
-                      <div className={`relative aspect-[4/3] rounded-3xl overflow-hidden bg-gradient-to-br ${feature.color} p-1`}>
-                        <div className="w-full h-full rounded-[22px] bg-white flex items-center justify-center">
-                          <div className="text-center p-8">
-                            <div className={`w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center`}>
-                              <Icon className="w-12 h-12 text-white" />
-                            </div>
-                            <p className="text-gray-500 text-sm">{feature.title}</p>
+                       <motion.div 
+                         whileHover={{ scale: 1.02 }}
+                         className={`relative aspect-square rounded-[64px] overflow-hidden bg-white border border-zinc-100 shadow-2xl flex items-center justify-center p-1`}
+                       >
+                          <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-[0.03]`} />
+                          <div className="relative z-10 w-full">
+                             {feature.viz}
                           </div>
-                        </div>
-                      </div>
+                       </motion.div>
                     </div>
                   </div>
                 </div>
@@ -286,6 +408,6 @@ export function HorizontalFeatures() {
           })}
         </motion.div>
       </div>
-    </div>
+    </section>
   );
 }

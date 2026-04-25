@@ -180,33 +180,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         <div className="border-t border-slate-200/80 bg-[#f8fafc] p-3">
-          <div className="space-y-2">
-            {deferredPrompt ? (
-              <button
-                onClick={handleInstall}
-                className="flex h-10 w-full items-center justify-between rounded-xl bg-slate-950 px-4 text-xs font-semibold text-white transition hover:bg-black"
-              >
-                <div className="flex items-center gap-3">
-                  <Download className="h-3.5 w-3.5" />
-                  Download App
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 -rotate-45" />
-              </button>
-            ) : null}
-
-            <Link
-              href="/upgrade"
-              className="flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-950 transition hover:border-slate-300 hover:bg-slate-50"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-950 text-white">
-                  <Sparkles className="h-3.5 w-3.5" />
-                </div>
-                Upgrade
-              </div>
-              <ArrowRight className="h-3.5 w-3.5 -rotate-45" />
-            </Link>
-          </div>
+          <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Persistent Voice Intelligence
+          </p>
         </div>
       </aside>
 
@@ -273,7 +249,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div className="flex items-center gap-2">
             <Link
-              href="/upgrade"
+              href="/pricing"
               className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white md:flex"
             >
               <Sparkles className="h-4 w-4" />

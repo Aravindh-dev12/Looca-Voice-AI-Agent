@@ -21,3 +21,4 @@ numpy==1.26.4
 librosa==0.10.2.post1
 aiofiles==24.1.0
 edge-tts
+scipy==1.13.1

@@ -15,6 +15,8 @@ import { AuthModal } from '@/components/AuthModal';
 import { HorizontalFeatures } from '@/components/HorizontalFeatures';
 import { FunctionCards } from '@/components/FunctionCards';
 import { ScrollingText } from '@/components/ScrollingText';
+import { IntegrationsGrid } from '@/components/IntegrationsGrid';
+import { InteractiveWaves } from '@/components/InteractiveWaves';
 
 const features = [
   {
@@ -135,7 +137,8 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-[90vh]">
+        <InteractiveWaves />
 
         {/* Compact Glassmorphism Header */}
         <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl">
@@ -145,9 +148,10 @@ export default function LandingPage() {
               <span className="text-lg font-bold text-gray-900">Looca</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
-              <Link href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
-              <Link href="#personal" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Personal</Link>
-              <Link href="/upgrade" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Upgrade</Link>
+              <Link href="#features" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
+              <Link href="#agent" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Agent</Link>
+              <Link href="/docs" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Documentation</Link>
+              <Link href="/pricing" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Pricing</Link>
             </div>
             <div className="flex items-center gap-3">
               {user ? (
@@ -173,7 +177,7 @@ export default function LandingPage() {
           </div>
         </nav>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-32">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-32">
           <div className="text-center max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -236,14 +240,19 @@ export default function LandingPage() {
       {/* Horizontal Scroll Features */}
       <HorizontalFeatures />
 
+      {/* Integrations Grid */}
+      <IntegrationsGrid />
+
       {/* Function Cards */}
-      <FunctionCards />
+      <div id="agent">
+        <FunctionCards />
+      </div>
 
       {/* Scrolling Text Animation */}
       <ScrollingText />
 
       {/* CTA */}
-      <section className="py-24 relative overflow-hidden bg-zinc-50">
+      <section className="py-24 relative overflow-hidden">
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
             Ready to experience the future of voice AI?
@@ -263,62 +272,44 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="overflow-hidden">
-        {/* Footer Content - Centered */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
-            <div>
-              <h4 className="font-bold text-gray-900 text-lg mb-5">Product</h4>
-              <ul className="space-y-3 text-base text-gray-500">
-                <li><Link href="/dashboard" className="hover:text-gray-900 transition-colors">Personal</Link></li>
-                <li><Link href="/upgrade" className="hover:text-gray-900 transition-colors">Upgrade</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-lg mb-5">Company</h4>
-              <ul className="space-y-3 text-base text-gray-500">
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">About</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Blog</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Careers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-lg mb-5">Resources</h4>
-              <ul className="space-y-3 text-base text-gray-500">
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Documentation</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">API Reference</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Support</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-lg mb-5">Legal</h4>
-              <ul className="space-y-3 text-base text-gray-500">
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Privacy</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Terms</Link></li>
-                <li><Link href="#" className="hover:text-gray-900 transition-colors">Security</Link></li>
-              </ul>
-            </div>
-          </div>
-        </div>
 
-        {/* Giant LOOCA Text - Full Page Width */}
-        <div className="relative w-full overflow-hidden mt-16">
-          <div className="flex items-center justify-center overflow-hidden">
-            <span
-              className="text-[30vw] md:text-[26vw] font-black text-black whitespace-nowrap select-none leading-[0.75] w-full text-center"
-              style={{ letterSpacing: '-0.08em' }}
-            >
-              LOOCA
-            </span>
-          </div>
-          {/* Bottom strip with logo */}
-          <div className="absolute bottom-0 left-0 right-0 py-4 px-8 bg-gradient-to-t from-white via-white/80 to-transparent">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <img src="/l.png" alt="Looca" className="w-5 h-5 rounded-md" />
-                <span className="text-gray-900 font-semibold text-sm">Looca AI</span>
+
+        {/* Giant LOOCA Text - Scrolling Marquee */}
+        <div className="relative w-full overflow-hidden mt-16 py-8">
+          <motion.div 
+            animate={{ x: [0, -1000] }}
+            transition={{ 
+              duration: 30, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+            className="flex whitespace-nowrap pointer-events-none gap-80"
+          >
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-80">
+                <span
+                  className="text-[30vw] md:text-[26vw] font-black text-gray-200/80 whitespace-nowrap select-none leading-[0.75]"
+                  style={{ letterSpacing: '-0.08em' }}
+                >
+                  LOOCA
+                </span>
+                <img 
+                  src="/l.png" 
+                  alt="" 
+                  className="w-[20vw] h-[20vw] object-contain opacity-[0.05] grayscale" 
+                />
               </div>
-              <p className="text-sm text-gray-500">
+            ))}
+          </motion.div>
+          
+          {/* Bottom strip with logo */}
+          <div className="absolute bottom-0 left-0 right-0 py-6 px-8 bg-gradient-to-t from-white via-white/95 to-transparent z-10">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/l.png" alt="Looca" className="w-6 h-6 rounded-lg shadow-sm" />
+                <span className="text-gray-900 font-bold text-base tracking-tight">Looca AI</span>
+              </div>
+              <p className="text-sm font-medium text-gray-500">
                 © 2026 Persistent Voice Intelligence. Built for GeeBlr Hack.
               </p>
             </div>

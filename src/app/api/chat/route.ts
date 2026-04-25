@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { searchKnowledge, upsertKnowledgePoint } from '@/lib/qdrant';
-import { v4 as uuidv4 } from 'uuid';
+import { LOOCA_SYSTEM_PROMPT } from '@/lib/skills_prompt';
 
 export async function POST(req: Request) {
   try {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. BROWSER AGENT PROMPT (The "Operator" Mindset)
+    // 4. Skills Intelligence Engine (Gemini 2.0 Flash)
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -58,22 +58,7 @@ export async function POST(req: Request) {
         messages: [
           {
             role: 'system',
-            content: `You are Looca, an Agentic AI Operating System. 
-            
-            YOUR EXECUTION MODEL:
-            You do NOT rely on simple APIs. You act like a human operator in a browser.
-            When a task is requested (e.g. "Book a doctor"), your internal process is:
-            1. Open Browser: Navigate to Google or specific service sites.
-            2. UI Understanding: Analyze the DOM/UI to find search bars, buttons, and forms.
-            3. Action: Click, Type, and Scroll autonomously.
-            4. Completion: Close the loop by confirming via WhatsApp Web.
-            
-            YOUR ADAPTIVE CONTEXT:
-            ${retrievedContext}
-            
-            MANDATORY LOGGING:
-            Your responses MUST include descriptions of these browser actions: 
-            "Launching Browser Instance", "Analyzing UI Selectors", "Simulating Click on [Button]", "Filling Form with [Data]".`,
+            content: `${LOOCA_SYSTEM_PROMPT}\n\nADAPTIVE CONTEXT:\n${retrievedContext}`,
           },
           ...((conversation?.messages || []).map((m: any) => ({ role: m.role, content: m.content }))),
           { role: 'user', content: message },
@@ -82,9 +67,31 @@ export async function POST(req: Request) {
     });
 
     const data = await response.json();
-    const aiMessage = data.choices?.[0]?.message?.content || 'Initializing browser agent...';
+    const rawAiMessage = data.choices?.[0]?.message?.content || 'Thinking...';
 
-    // 5. Save AI response
+    // 5. Parse Metadata and Clean Response
+    let aiMessage = rawAiMessage;
+    let metadata = null;
+
+    if (rawAiMessage.includes('---METADATA---')) {
+      const parts = rawAiMessage.split('---METADATA---');
+      aiMessage = parts[0].trim();
+      try {
+        const metadataStr = parts[1].trim();
+        metadata = JSON.parse(metadataStr);
+      } catch (e) {
+        console.error('Failed to parse metadata:', e);
+        // Fallback for malformed JSON
+        metadata = {
+            detected_skill: "general",
+            confidence_level: 50,
+            emotional_load: "low",
+            next_action: "None"
+        };
+      }
+    }
+
+    // 6. Save AI response
     const savedMessage = await prisma.message.create({
       data: {
         role: 'assistant',
@@ -93,15 +100,14 @@ export async function POST(req: Request) {
       },
     });
 
-    // Detect Agentic Actions for DB
-    const lowerMessage = aiMessage.toLowerCase();
-    if (lowerMessage.includes('browser') || lowerMessage.includes('launching')) {
+    // Detect Agentic Actions for DB if metadata suggests it
+    if (metadata?.next_action && metadata.next_action !== "None") {
       await prisma.appAction.create({
         data: {
-          appName: 'BrowserAgent',
-          actionType: 'web_automation',
+          appName: metadata.detected_skill || 'General',
+          actionType: 'skills_intelligence',
           messageId: savedMessage.id,
-          metadata: { query: message, engine: 'Playwright-Simulated' },
+          metadata: metadata,
         }
       });
     }
@@ -109,9 +115,10 @@ export async function POST(req: Request) {
     return NextResponse.json({
       reply: aiMessage,
       conversationId: conversation.id,
+      metadata: metadata
     });
   } catch (error: any) {
-    console.error('Agentic Chat Error:', error);
+    console.error('Skills Intelligence Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
