@@ -3,6 +3,57 @@ import { ensureCollection, upsertKnowledgePoint } from '../src/lib/qdrant';
 import docs from '../data/seed-docs.json' with { type: 'json' };
 
 async function main() {
+  const prismaUnsafe = prisma as any;
+
+  // Seed plans for enterprise subscriptions
+  const plans = [
+    {
+      name: 'Personal',
+      type: 'personal',
+      description: 'Free personal voice assistant',
+      priceMonthly: 0,
+      priceYearly: 0,
+      features: ['Personal voice assistant', 'Meeting transcription', 'Health tracking', 'File intelligence'],
+      limits: JSON.stringify({ calls: 100, storage: '1GB' }),
+    },
+    {
+      name: 'Starter',
+      type: 'starter',
+      description: 'For small teams getting started',
+      priceMonthly: 4999,
+      priceYearly: 49990,
+      features: ['5,000 calls/month', '3 team members', '2 languages', 'Basic analytics', '1 API key'],
+      limits: JSON.stringify({ calls: 5000, members: 3, languages: 2, apiKeys: 1 }),
+    },
+    {
+      name: 'Growth',
+      type: 'growth',
+      description: 'For growing organizations',
+      priceMonthly: 14999,
+      priceYearly: 149990,
+      features: ['25,000 calls/month', '10 team members', '10+ languages', 'Advanced analytics', '5 API keys', 'Custom voice agent'],
+      limits: JSON.stringify({ calls: 25000, members: 10, languages: 10, apiKeys: 5 }),
+    },
+    {
+      name: 'Enterprise',
+      type: 'enterprise',
+      description: 'For large-scale deployment',
+      priceMonthly: 0, // Custom pricing
+      priceYearly: 0,
+      features: ['Unlimited calls', 'Unlimited members', '22+ languages', 'Real-time intelligence', 'Unlimited API keys', 'Custom AI training', 'On-premise option'],
+      limits: JSON.stringify({ calls: 'unlimited', members: 'unlimited', languages: 22, apiKeys: 'unlimited' }),
+    },
+  ];
+
+  for (const plan of plans) {
+    await prismaUnsafe.plan.upsert({
+      where: { name: plan.name },
+      update: plan,
+      create: plan,
+    });
+  }
+  console.log(`Seeded ${plans.length} subscription plans`);
+
   await ensureCollection();
 
   for (const doc of docs) {

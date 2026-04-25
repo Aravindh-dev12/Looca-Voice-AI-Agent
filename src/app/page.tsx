@@ -1,120 +1,323 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
-import { StatCard } from '@/components/StatCard';
-import { KnowledgePanel } from '@/components/KnowledgePanel';
-import { formatDate } from '@/lib/utils';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import {
+  Mic, Brain, Shield, Zap, Globe,
+  Sparkles, ArrowRight, User as UserIcon, LogOut, Download
+} from 'lucide-react';
+import { Button, Card, Badge } from '@/components/ui';
+import { useAuth } from '@/components/AuthProvider';
+import { AuthModal } from '@/components/AuthModal';
+import { HorizontalFeatures } from '@/components/HorizontalFeatures';
+import { FunctionCards } from '@/components/FunctionCards';
+import { ScrollingText } from '@/components/ScrollingText';
+import { IntegrationsGrid } from '@/components/IntegrationsGrid';
+import { InteractiveWaves } from '@/components/InteractiveWaves';
 
-async function getDashboardData() {
-  const [conversations, knowledgeDocs, voiceSessions] = await Promise.all([
-    prisma.conversation.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      include: { transcript: true },
-    }),
-    prisma.knowledgeDoc.findMany({ orderBy: { createdAt: 'desc' }, take: 4 }),
-    prisma.voiceSession.findMany({ orderBy: { createdAt: 'desc' }, take: 4 }),
-  ]);
+const features = [
+  {
+    icon: Brain,
+    title: 'Episodic Memory',
+    desc: 'Every conversation remembered. Looca builds a timeline of your life from voice interactions.',
+    color: 'from-zinc-400 to-zinc-600',
+  },
+  {
+    icon: Mic,
+    title: 'Always Listening',
+    desc: 'Say "Hey Looca" anywhere. Your AI assistant is always ready, even offline.',
+    color: 'from-zinc-300 to-zinc-500',
+  },
+  {
+    icon: Shield,
+    title: 'Private & Local',
+    desc: 'Your data never leaves your device. Run local AI models with optional cloud sync.',
+    color: 'from-zinc-500 to-zinc-700',
+  },
+  {
+    icon: Zap,
+    title: '7th Sense AI',
+    desc: 'Proactive intelligence that detects patterns and anticipates your needs.',
+    color: 'from-zinc-200 to-zinc-400',
+  },
+];
 
-  return { conversations, knowledgeDocs, voiceSessions };
-}
+const stats = [
+  { value: '50K+', label: 'Voice Calls' },
+  { value: '94%', label: 'Outcome Rate' },
+  { value: '10+', label: 'Indian Languages' },
+  { value: '24/7', label: 'Availability' },
+];
 
-export default async function OverviewPage() {
-  const { conversations, knowledgeDocs } = await getDashboardData();
-  const multilingualDocs = knowledgeDocs.filter((doc: any) => doc.language !== 'en').length;
+export default function LandingPage() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showSplash, setShowSplash] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    setIsStandalone(checkStandalone);
+
+    if (checkStandalone && !user) {
+      setShowSplash(true);
+      setTimeout(() => {
+        setShowSplash(false);
+        setAuthOpen(true);
+      }, 3500);
+    }
+
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, [user]);
+
+  const handleInstall = async () => {
+    if (user) {
+      router.push('/dashboard');
+      return;
+    }
+
+    if (!deferredPrompt) {
+      setAuthOpen(true);
+      return;
+    }
+
+    // Still allow public users who have been prompted but haven't logged in to install if they want 
+    // OR we can just force them to Get Started (Auth)
+    setAuthOpen(true);
+  };
+
+  const handleProtectedClick = (path: string) => {
+    if (user) {
+      router.push(path);
+    } else {
+      setAuthOpen(true);
+    }
+  };
 
   return (
-    <main className="page-grid">
-      <section className="hero-full">
-        <div className="card glass-premium">
-          <div className="wave-container">
-            <div className="wave-layer l1"></div>
-            <div className="wave-layer l2"></div>
-            <div className="wave-layer l3"></div>
-          </div>
-          <div className="impact-header">
-            <span className="pill-success">Societal Impact Project</span>
-            <h2>Bridging the Digital Divide with <br/>Voice AI</h2>
-            <p className="impact-description">
-              Our mission is to provide equal access to essential services. For people facing 
-              literacy challenges, visual impairments, or linguistic barriers, this voice-first 
-              interface acts as a bridge to healthcare, legal aid, and public welfare.
-            </p>
-          </div>
-
-          <div className="hero-stats">
-            <div className="hero-stat-box">
-              <h3>{knowledgeDocs.length}</h3>
-              <p>Knowledge Clusters in Qdrant</p>
+    <div className="landing-page">
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black flex items-center justify-center px-4"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+              >
+                <img src="/l.png" alt="Looca" className="w-20 h-20 mx-auto mb-8 invert" />
+                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-4">
+                  LOOCA AI
+                </h2>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 1 }}
+                  className="text-zinc-400 text-lg md:text-xl font-medium tracking-tight"
+                >
+                  Your Voice Opinion Model
+                </motion.p>
+              </motion.div>
             </div>
-            <div className="hero-stat-box">
-              <h3>{multilingualDocs}+</h3>
-              <p>Languages Supported</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Hero */}
+      <section className="relative overflow-hidden min-h-[90vh]">
+        <InteractiveWaves />
+
+        {/* Compact Glassmorphism Header */}
+        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl">
+          <div className="flex items-center justify-between px-6 py-2.5 rounded-full bg-white/80 backdrop-blur-xl border border-gray-200 shadow-lg">
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/l.png" alt="Looca" width={32} height={32} className="rounded-lg" />
+              <span className="text-lg font-bold text-gray-900">Looca</span>
+            </Link>
+            <div className="hidden md:flex items-center gap-6">
+              <Link href="#features" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
+              <Link href="#agent" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Agent</Link>
+              <Link href="/docs" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Documentation</Link>
+              <Link href="/pricing" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">Pricing</Link>
+            </div>
+            <div className="flex items-center gap-3">
+              {user ? (
+                <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex flex-col items-end">
+                    <span className="text-sm font-black text-gray-900 leading-none">{user.name || 'Looca user'}</span>
+                  </div>
+                  <Link href="/dashboard">
+                    <div className="relative group">
+                      <div className="w-10 h-10 rounded-full border-2 border-black overflow-hidden flex items-center justify-center text-black font-black text-lg uppercase transition-all group-hover:bg-black group-hover:text-white">
+                        {(user.name || 'U')[0]}
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                    </div>
+                  </Link>
+                </div>
+              ) : (
+                <Button size="sm" onClick={() => setAuthOpen(true)} className="rounded-full px-6">
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
+        </nav>
 
-          <div className="hero-actions">
-            <Link className="btn-grand btn-primary" href="/agent">
-              <span>Get Started</span>
-            </Link>
-            <Link className="btn-grand btn-secondary" href="/knowledge">
-              <span>View Knowledge Graph</span>
-            </Link>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-32">
+          <div className="text-center max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 border border-gray-300 mb-8"
+            >
+              <Sparkles className="w-4 h-4 text-gray-900" />
+              <span className="text-sm text-gray-900">GeeBfr Hack 2026</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight"
+            >
+              Your AI that lives <span className="text-black">inside</span> your computer
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto"
+            >
+              Looca is not a website. It is a persistent intelligence layer that lives inside your computer,
+              always aware, always helping like your personal AI companion.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <Button size="lg" className="h-14 px-10 text-lg rounded-full bg-black text-white hover:bg-zinc-800 transition-all shadow-xl group" onClick={handleInstall}>
+                Get Started
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16"
+            >
+              {stats.map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                  <div className="text-sm text-gray-500">{stat.label}</div>
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
 
-      <section className="impact-grid">
-        <div className="card impact-card">
-          <div className="icon-wrap info">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      {/* Horizontal Scroll Features */}
+      <HorizontalFeatures />
+
+      {/* Integrations Grid */}
+      <IntegrationsGrid />
+
+      {/* Function Cards */}
+      <div id="agent">
+        <FunctionCards />
+      </div>
+
+      {/* Scrolling Text Animation */}
+      <ScrollingText />
+
+      {/* CTA */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+            Ready to experience the future of voice AI?
+          </h2>
+          <p className="text-gray-600 mb-8 text-lg">
+            Join people using Looca to transform
+            how they interact with technology.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button size="lg" className="h-16 px-12 text-xl rounded-full bg-black text-white hover:bg-zinc-800 transition-all shadow-2xl group" onClick={handleInstall}>
+              Get Started
+              <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </Button>
           </div>
-          <h3>Contextual Understanding</h3>
-          <p>Powered by Qdrant, the AI remembers user needs and retrieves specific service documentation based on semantic meaning rather than just keywords.</p>
-        </div>
-        <div className="card impact-card">
-          <div className="icon-wrap help">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <h3>Low-Literacy Design</h3>
-          <p>No complex menus or forms. Users interact through natural speech, getting simple, step-by-step oral guidance for complex tasks.</p>
-        </div>
-        <div className="card impact-card">
-          <div className="icon-wrap glob">
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          </div>
-          <h3>Adaptive Response</h3>
-          <p>Whether it's healthcare navigation or public school registration, the agent adapts its tone and complexity to match the user's comfort level.</p>
         </div>
       </section>
 
-      <footer className="grand-footer">
-        <div className="footer-tagline">
-          Empowering Every Voice with Inclusive & Intentional AI
-        </div>
-        
-        <h1 className="footer-logo-massive">LOOCA</h1>
+      {/* Footer */}
+      <footer className="overflow-hidden">
 
-        <div className="footer-content">
-          <div className="footer-info">
-            <div className="info-group">
-               <h4>Mission</h4>
-               <p>Accessibility-first voice AI designed to bridge the gap between complex digital systems and essential human needs.</p>
-            </div>
-            <div className="info-group">
-               <h4>Expertise</h4>
-               <p>Specializing in low-literacy interfaces, multilingual support, and contextual memory for societal impact.</p>
-            </div>
-            <div className="info-group">
-               <h4>Connect</h4>
-               <p>Building the future of inclusive technology. Part of the Global Voice AI Challenge 2026.</p>
-            </div>
-          </div>
+
+        {/* Giant LOOCA Text - Scrolling Marquee */}
+        <div className="relative w-full overflow-hidden mt-16 py-8">
+          <motion.div 
+            animate={{ x: [0, -1000] }}
+            transition={{ 
+              duration: 30, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+            className="flex whitespace-nowrap pointer-events-none gap-80"
+          >
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-80">
+                <span
+                  className="text-[30vw] md:text-[26vw] font-black text-gray-200/80 whitespace-nowrap select-none leading-[0.75]"
+                  style={{ letterSpacing: '-0.08em' }}
+                >
+                  LOOCA
+                </span>
+                <img 
+                  src="/l.png" 
+                  alt="" 
+                  className="w-[20vw] h-[20vw] object-contain opacity-[0.05] grayscale" 
+                />
+              </div>
+            ))}
+          </motion.div>
           
-          <div className="footer-bottom">
-            <p>&copy; 2026 Looca Voice AI Platform. Built for Societal Impact.</p>
+          {/* Bottom strip with logo */}
+          <div className="absolute bottom-0 left-0 right-0 py-6 px-8 bg-gradient-to-t from-white via-white/95 to-transparent z-10">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/l.png" alt="Looca" className="w-6 h-6 rounded-lg shadow-sm" />
+                <span className="text-gray-900 font-bold text-base tracking-tight">Looca AI</span>
+              </div>
+              <p className="text-sm font-medium text-gray-500">
+                © 2026 Persistent Voice Intelligence. Built for GeeBlr Hack.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
-    </main>
+
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+    </div>
   );
 }

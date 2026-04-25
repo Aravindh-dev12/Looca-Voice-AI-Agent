@@ -4,3 +4,6 @@ node_modules
 prisma/dev.db
 dist
 coverage
+backend/venv
+backend/__pycache__
+backend/app/__pycache__
