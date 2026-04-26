@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -23,7 +23,7 @@ interface PendingAction {
   confirmation_message: string;
 }
 
-export default function MobileVoicePage() {
+function MobileVoiceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [callState, setCallState] = useState<CallState>('idle');
@@ -667,5 +667,20 @@ export default function MobileVoicePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MobileVoicePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="w-16 h-16 bg-zinc-800 rounded-full" />
+          <p className="text-zinc-500 text-sm">Initializing Voice Layer...</p>
+        </div>
+      </div>
+    }>
+      <MobileVoiceContent />
+    </Suspense>
   );
 }
