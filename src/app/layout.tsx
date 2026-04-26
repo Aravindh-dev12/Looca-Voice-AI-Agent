@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { AuthProvider } from '@/components/AuthProvider';
 import { Inter } from 'next/font/google';
 
@@ -9,10 +9,13 @@ export const metadata: Metadata = {
   title: 'Looca - Voice AI Intelligence',
   description: 'Your voice-first personal action AI for accessibility, guidance, and real-world tasks.',
   manifest: '/manifest.json',
-  themeColor: '#000000',
   icons: {
     icon: '/l.ico',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#000000',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
