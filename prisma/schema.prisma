@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String?        @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String         @default("user")
+  createdAt     DateTime       @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  conversations Conversation[]
+  members       Member[]
+  apiKeys       ApiKey[]
+  subscriptions Subscription[]
+  
+  // Active context - which org they're currently viewing
+  activeOrgId   String?
+  mode          String         @default("personal") // personal, company
+  connectedApps String         @default("[]") // List of app IDs user has connected
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  channel       String    @default("voice")
+  language      String    @default("en")
+  userName      String?
+  userPhone     String?
+  issueType     String?
+  status        String    @default("open")
+  summary       String?
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  transcript    Message[]
+}
+
+model Message {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  role          String
+  content       String
+  conversationId String
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  actions       AppAction[]
+}
+
+model AppAction {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  appName       String
+  actionType    String    // open, search, draft, message, transcribe
+  status        String    @default("completed")
+  metadata      String?     // { url: "...", query: "..." }
+  messageId     String
+  message       Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model KnowledgeDoc {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  title       String
+  category    String
+  language    String   @default("en")
+  source      String?
+  content     String
+  tagsJson    String   @default("[]")
+  qdrantId    String?
+}
+
+model VoiceSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  provider    String   @default("vapi")
+  assistantId String?
+  callId      String?
+  status      String   @default("queued")
+  notes       String?
+}
+
+// Organization/Company Model
+model Organization {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  industry      String?
+  email         String
+  phone         String?
+  website       String?
+  logo          String?
+  status        String         @default("active")
+  planId        String?
+  plan          Plan?          @relation(fields: [planId], references: [id])
+  apiKeys       ApiKey[]
+  members       Member[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Company-specific settings
+  voiceNumber   String?
+  languages     String       @default("en,hi,ta")
+  settings      String?        @default("{}")
+}
+
+// Subscription Plans
+model Plan {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  type          String         @default("personal") // personal, starter, growth, enterprise
+  description   String?
+  priceMonthly  Int            @default(0)
+  priceYearly   Int            @default(0)
+  features      String         @default("")
+  limits        String?        @default("{}") // JSON: { calls: 1000, members: 5, etc }
+  isActive      Boolean        @default(true)
+  organizations Organization[]
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+}
+
+// Organization Members (Users belonging to orgs)
+model Member {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role            String       @default("member") // owner, admin, member
+  joinedAt        DateTime     @default(now())
+  
+  @@unique([userId, organizationId])
+}
+
+// API Keys for Enterprise
+model ApiKey {
+  id              String       @id @default(cuid())
+  name            String       @default("Default")
+  key             String       @unique
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById     String
+  createdBy       User         @relation(fields: [createdById], references: [id])
+  lastUsedAt      DateTime?
+  usageCount      Int          @default(0)
+  isActive        Boolean      @default(true)
+  permissions     String       @default("read")
+  createdAt       DateTime     @default(now())
+  expiresAt       DateTime?
+}
+
+// User Subscriptions (for tracking plan purchases)
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId          String
+  plan            Plan     @relation(fields: [planId], references: [id])
+  status          String   @default("active") // active, cancelled, expired
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

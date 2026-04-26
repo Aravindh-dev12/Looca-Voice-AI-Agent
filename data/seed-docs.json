@@ -1,0 +1,106 @@
+[
+  {
+    "title": "Clinic Visit Navigator",
+    "category": "healthcare",
+    "language": "en",
+    "source": "Looca health base",
+    "content": "To book an appointment at the Community Health Center, follow these 3 simple steps: 1. Call 555-0199 between 9 AM and 4 PM. 2. Bring your government ID card and proof of address. 3. Ask for a translator if needed. The clinic is located at 123 Green Valley Road, directly across from the Central Bus Station.",
+    "tags": ["appointments", "healthcare", "accessibility"]
+  },
+  {
+    "title": "Patient Registration Guide",
+    "category": "healthcare",
+    "language": "en",
+    "source": "Looca health base",
+    "content": "To register as a new patient, visit the clinic front desk between 8 AM and 10 AM on weekdays. Staff will help you fill out the application if you have difficulty reading or writing. Bring any previous medical records and your residency certificate.",
+    "tags": ["registration", "onboarding", "support"]
+  },
+  {
+    "title": "Home Support Services",
+    "category": "healthcare",
+    "language": "en",
+    "source": "Looca health base",
+    "content": "For elderly patients or those with mobility impairments, we offer home-visit nursing on Tuesdays and Thursdays. To request a home visit, ask the assistant to 'Request a Home Nurse'. This service is free for residents of the Green Valley district.",
+    "tags": ["elderly-care", "accessibility", "home-visit"]
+  },
+  {
+    "title": "Vaccination Schedule",
+    "category": "healthcare",
+    "language": "en",
+    "source": "Public Health Dept",
+    "content": "Flu vaccines are available every morning in October from 8 AM to 12 PM. Children's routine vaccines are administered in the Pediatric Wing on Wednesdays. No appointment is needed for these clinics—just bring your health card.",
+    "tags": ["vaccination", "pediatrics", "prevention"]
+  },
+  {
+    "title": "Public Library Digital Access",
+    "category": "education",
+    "language": "en",
+    "source": "Looca Education Dept",
+    "content": "To get a library card for digital books, visit the Central Library with a utility bill as proof of address. If you cannot visit in person, you can call the Library Help Desk at 555-0211 for a 'Voice Card' to listen to audiobooks.",
+    "tags": ["education", "library", "literacy"]
+  },
+  {
+    "title": "Adult Literacy Program",
+    "category": "education",
+    "language": "en",
+    "source": "Community College",
+    "content": "We offer free reading and writing classes for adults every Saturday at the Community Center. To join, just tell the assistant 'Sign up for Reading Class'. Classes are small and focus on everyday skills like reading bills and signs.",
+    "tags": ["learning", "adult-education", "literacy"]
+  },
+  {
+    "title": "Scholarship Checklist",
+    "category": "education",
+    "language": "en",
+    "source": "Education Foundation",
+    "content": "To apply for the Youth Grant, you need: 1. Your school transcript. 2. Two letters of recommendation. 3. A short personal statement (which can be dictated to us). Deadline for submission is August 15th every year.",
+    "tags": ["scholarship", "financial-aid", "youth"]
+  },
+  {
+    "title": "City ID Card Registration",
+    "category": "public-services",
+    "language": "en",
+    "source": "City Administration",
+    "content": "Every resident is eligible for a City ID. To apply: 1. Fill out the oral form with Looca. 2. We mail a paper form to your house. 3. Sign and return it in the pre-paid envelope. No computer usage is required.",
+    "tags": ["government", "identity", "discounts"]
+  },
+  {
+    "title": "Waste Collection Schedule",
+    "category": "public-services",
+    "language": "en",
+    "source": "Sanitation Dept",
+    "content": "General trash is collected every Monday. Recycling (paper and plastic) is collected on the first and third Thursday of each month. Please place your bins on the curb by 7 AM.",
+    "tags": ["sanitation", "recycling", "schedule"]
+  },
+  {
+    "title": "Voter Registration Guide",
+    "category": "public-services",
+    "language": "en",
+    "source": "Election Board",
+    "content": "You can register to vote if you are over 18 and a resident. To register, visit the Post Office and ask for 'Form V'. If you need assistance, the clerk will help you fill it out. Registration must be completed 30 days before any election.",
+    "tags": ["voting", "citizenship", "rights"]
+  },
+  {
+    "title": "Basic Savings Account",
+    "category": "finance",
+    "language": "en",
+    "source": "Community Bank",
+    "content": "Open a 'Starter Account' with just $5. No monthly fees with direct deposit. To start, say 'Begin Bank Application'. A bank representative will call you back to verify your identity by phone.",
+    "tags": ["banking", "finance", "inclusion"]
+  },
+  {
+    "title": "Micro-Loan for Small Business",
+    "category": "finance",
+    "language": "en",
+    "source": "Small Business Admin",
+    "content": "Local residents can apply for small interest-free loans (up to $500) for home-based businesses. No credit score is required; you only need to show your business plan. Ask the assistant for 'Loan Application' to start the process.",
+    "tags": ["business", "loan", "support"]
+  },
+  {
+    "title": "Social Security & Pension Info",
+    "category": "finance",
+    "language": "en",
+    "source": "Social Security Dept",
+    "content": "Pension payments are distributed on the 1st of every month. If you haven't received your check, call 555-0900. To check your eligibility for increased support, you can book a 'Benefits Review' call through the Looca assistant.",
+    "tags": ["pension", "benefits", "seniors"]
+  }
+]

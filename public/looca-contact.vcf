@@ -1,0 +1,12 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Looca AI
+N:AI;Looca;;;
+TEL;TYPE=VOICE,WORK:+9180LOOCA01
+EMAIL;TYPE=INTERNET:hello@looca.ai
+URL;TYPE=WORK:https://looca.ai
+PHOTO;VALUE=uri;TYPE=PNG:https://looca.ai/l.png
+CATEGORIES:AI Assistant,Voice Assistant
+NOTE:Looca is your voice AI assistant. Call this contact to talk to Looca in your own language — Tamil\, Hindi\, Telugu\, Kannada\, and more. Ask Looca to book appointments\, send messages\, set reminders\, or get help with anything.
+X-SOCIALPROFILE;TYPE=whatsapp:https://wa.me/9180LOOCA01
+END:VCARD

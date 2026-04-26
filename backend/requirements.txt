@@ -1,0 +1,29 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+psycopg2-binary
+aiosqlite
+alembic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+pydantic
+pydantic-settings
+httpx
+redis
+qdrant-client
+voyageai
+anthropic
+celery
+websockets
+aiofiles
+edge-tts
+google-generativeai
+openai
+playwright
+
+# The following require a C++ compiler on Python 3.14+ (e.g. Visual Studio Build Tools)
+# librosa
+# scipy
+# numpy

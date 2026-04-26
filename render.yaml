@@ -1,0 +1,94 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Backend Service (Python/FastAPI)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: looca-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    plan: starter # Starter plan recommended for audio processing
+    region: ohio
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: looca-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: looca-redis
+          property: connectionString
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: looca-frontend
+          property: host
+      # Auth Secret (Generated if not provided)
+      - key: SECRET_KEY
+        generateValue: true
+      # --- REQUIRED EXTERNAL KEYS (User must provide these in Render UI) ---
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: VAPI_PRIVATE_KEY
+        sync: false
+      - key: VAPI_ASSISTANT_ID
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # Frontend Service (Next.js)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: looca-frontend
+    env: node
+    buildCommand: bash ./scripts/render-build-frontend.sh
+    startCommand: npm run start
+    plan: starter
+    region: ohio
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: looca-db
+          property: connectionString
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: looca-backend
+          property: host
+      - key: NEXTAUTH_URL
+        fromService:
+          type: web
+          name: looca-frontend
+          property: host
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: APP_URL
+        fromService:
+          type: web
+          name: looca-frontend
+          property: host
+      # Client-side keys
+      - key: NEXT_PUBLIC_VAPI_PUBLIC_KEY
+        sync: false
+      - key: NEXT_PUBLIC_VAPI_ASSISTANT_ID
+        sync: false
+
+# ----------------------------------------------------------------------------
+# Managed Database (PostgreSQL)
+# ----------------------------------------------------------------------------
+databases:
+  - name: looca-db
+    plan: free # Free tier available, upgrade if needed
+    region: ohio
+
+# ----------------------------------------------------------------------------
+# Managed Redis
+# ----------------------------------------------------------------------------
+redis:
+  - name: looca-redis
+    plan: free
+    region: ohio

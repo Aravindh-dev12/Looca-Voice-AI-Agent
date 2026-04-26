@@ -1,0 +1,58 @@
+{
+  "name": "Looca Voice AI",
+  "short_name": "Looca",
+  "description": "Your voice-first AI assistant — call Looca like you call a person. Book appointments, send messages, get reminders in your own language.",
+  "start_url": "/mobile-voice",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "categories": ["health", "lifestyle", "utilities", "accessibility"],
+  "contact_picker": {
+    "tel": "+9180LOOCA01",
+    "name": "Looca AI",
+    "email": "hello@looca.ai"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "tel",
+      "url": "/mobile-voice?call=%s"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/l.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/l.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/l.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Call Looca",
+      "url": "/mobile-voice?call=true",
+      "description": "Start a voice conversation with Looca",
+      "icons": [{ "src": "/l.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View your Looca dashboard",
+      "icons": [{ "src": "/l.png", "sizes": "192x192" }]
+    }
+  ]
+}
