@@ -1,7 +1,8 @@
 """Hybrid/offline entrypoint for Looca."""
 
 from app.main import app
-from app.hybrid_voice import router as hybrid_voice_router
+from app import hybrid_voice
+from app.hosted_fallback import install_edge_tts_fallback
 
 OVERRIDDEN = {
     ("POST", "/api/vios/tts"),
@@ -16,5 +17,6 @@ def keep_route(route):
     return not any(path == p and method in methods for method, p in OVERRIDDEN)
 
 
+install_edge_tts_fallback(hybrid_voice)
 app.router.routes = [route for route in app.router.routes if keep_route(route)]
-app.include_router(hybrid_voice_router)
+app.include_router(hybrid_voice.router)
