@@ -20,5 +20,6 @@ websockets==13.1
 numpy==1.26.4
 librosa==0.10.2.post1
 aiofiles==24.1.0
-edge-tts
+edge-tts==7.2.8
 scipy==1.13.1
+faster-whisper==1.2.1
