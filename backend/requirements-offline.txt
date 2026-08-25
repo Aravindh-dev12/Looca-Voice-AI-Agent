@@ -1,0 +1,5 @@
+# Optional extended offline profile. Install after requirements.txt.
+torch>=2.4,<3
+transformers>=4.45,<6
+accelerate>=1.0,<2
+pycountry>=24.6
