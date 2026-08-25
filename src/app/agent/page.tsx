@@ -4,14 +4,18 @@ import { formatDate } from '@/lib/utils';
 import seedDocs from '../../../data/seed-docs.json' with { type: 'json' };
 
 async function getAgentData() {
-  const conversations = await prisma.conversation.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
-  
   const categories = [...new Set(seedDocs.map((doc: any) => doc.category))];
-  
-  return { conversations, categories, seedDocs };
+
+  try {
+    const conversations = await prisma.conversation.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+    return { conversations, categories, seedDocs };
+  } catch (error) {
+    console.warn('Conversation history unavailable; continuing without database history.', error);
+    return { conversations: [], categories, seedDocs };
+  }
 }
 
 const categoryLabels: Record<string, string> = {
@@ -29,7 +33,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default async function AssistantPage() {
-  const { conversations, categories, seedDocs } = await getAgentData();
+  const { conversations, categories } = await getAgentData();
 
   return (
     <main className="page-grid">
@@ -37,27 +41,27 @@ export default async function AssistantPage() {
         <div className="pill-success">Interactive Assistant</div>
         <h2 style={{ fontSize: 32, margin: '14px 0 6px' }}>Talk with Looca</h2>
         <p className="muted" style={{ maxWidth: 820 }}>
-          This is the primary interaction point. Speak clearly to the assistant to get support or 
+          This is the primary interaction point. Speak clearly to the assistant to get support or
           guidance. Qdrant-backed memory is automatically used to provide context-aware responses.
         </p>
       </section>
 
       <section className="columns-2">
         <div className="card panel">
-           <h3>Voice Interaction</h3>
-           <p className="muted" style={{ marginBottom: 20 }}>
-             Press the button below to start a live session.
-           </p>
-           <VoiceWidget />
-           
-           <div className="small-card" style={{ marginTop: 30 }}>
-             <h4>Instructions</h4>
-             <ul className="muted" style={{ paddingLeft: 20, fontSize: 13, lineHeight: 1.8 }}>
-               <li>State your request clearly.</li>
-               <li>Ask about specific services (e.g., "Healthcare").</li>
-               <li>The assistant will simplify complex steps for you.</li>
-             </ul>
-           </div>
+          <h3>Voice Interaction</h3>
+          <p className="muted" style={{ marginBottom: 20 }}>
+            Press the button below to start a live session.
+          </p>
+          <VoiceWidget />
+
+          <div className="small-card" style={{ marginTop: 30 }}>
+            <h4>Instructions</h4>
+            <ul className="muted" style={{ paddingLeft: 20, fontSize: 13, lineHeight: 1.8 }}>
+              <li>State your request clearly.</li>
+              <li>Ask about specific services (e.g., "Healthcare").</li>
+              <li>The assistant will simplify complex steps for you.</li>
+            </ul>
+          </div>
         </div>
 
         <div className="card panel">
@@ -65,7 +69,7 @@ export default async function AssistantPage() {
           <p className="muted" style={{ marginBottom: 20 }}>
             Available support categories and recent interactions.
           </p>
-          
+
           <div style={{ marginBottom: 20 }}>
             <h4 style={{ fontSize: 14, marginBottom: 12, color: '#94a3b8' }}>Support Categories</h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -103,12 +107,10 @@ export default async function AssistantPage() {
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                     <span className={`status-pill ${convo.status}`}>
-                       {convo.status}
-                     </span>
-                     <div style={{ marginTop: 4 }}>
-                       <small>{formatDate(convo.createdAt)}</small>
-                     </div>
+                    <span className={`status-pill ${convo.status}`}>{convo.status}</span>
+                    <div style={{ marginTop: 4 }}>
+                      <small>{formatDate(convo.createdAt)}</small>
+                    </div>
                   </div>
                 </div>
               ))}
