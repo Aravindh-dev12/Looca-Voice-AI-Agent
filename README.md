@@ -1,6 +1,5 @@
-# Looca — AGI/ASI Voice Architecture
+# Looca — AI Voice Agent Architecture
 
-A full-stack AGI voice-first platform built for GeeBlr Hack 2026. React frontend + Python backend + PostgreSQL + Qdrant + VAPI + Claude.
 
 ## Architecture
 
